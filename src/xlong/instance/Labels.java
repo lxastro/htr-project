@@ -16,12 +16,12 @@ public final class Labels {
 	/** delimiter in regular expression. */
 	private static final String DELIMITERREG = " ";
 	/** To store label texts. Associate IDs with their text. */
-	private static Vector<String> labelText;
+	private static Vector<Label> labelVector;
 	/** Map from a text to corresponding label.*/
 	private static Map<String, Label> labels;
 	
 	static {
-		labelText = new Vector<String>();
+		labelVector = new Vector<Label>();
 		labels  = new HashMap<String, Label>();
 	}
 
@@ -78,11 +78,32 @@ public final class Labels {
 	public static Label getLabel(final String text) {
 		Label label = labels.get(text);
 		if (label == null) {
-			label = new LabelImpl(text, labelText.size());
-			labelText.add(text);
+			label = new LabelImpl(text, labelVector.size());
+			labelVector.add(label);
 			labels.put(text, label);
 		}
 		return label;
+	}
+	
+	/**
+	 * 
+	 * @param id id
+	 * @return the label
+	 */
+	public static Label getLabel(final int id) {
+		return labelVector.get(id);
+	}
+	/**
+	 * 
+	 * @param texts texts
+	 * @return labels
+	 */
+	public static TreeSet<Label> getLabels(final Collection<String> texts) {
+		TreeSet<Label> labelSet = new TreeSet<Label>();
+		for (String text:texts) {
+			labelSet.add(Labels.getLabel(text));
+		}
+		return labelSet;
 	}
 	
 	/**
@@ -95,10 +116,10 @@ public final class Labels {
 		StringBuffer str = new StringBuffer();
 		Iterator<Label> iterator = labelSet.iterator();
 		if (iterator.hasNext()) {
-			str = str.append(iterator.next().getID());
+			str = str.append(iterator.next().getText());
 		}
 		while (iterator.hasNext()) {
-			str = str.append(DELIMITER + iterator.next().getID());
+			str = str.append(DELIMITER + iterator.next().getText());
 		}
 		return str.toString();
 	}
@@ -114,5 +135,14 @@ public final class Labels {
 			labelSet.add(Labels.getLabel(label));
 		}
 		return labelSet;
+	}
+
+	/**
+	 * 
+	 * @param label label
+	 * @return string
+	 */
+	public static String labelsToString(final Label label) {
+		return label.getText();
 	}
 }

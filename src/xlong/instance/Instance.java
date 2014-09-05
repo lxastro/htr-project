@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -61,8 +62,8 @@ public class Instance implements InstanceComponent {
 	}
 
 	@Override
-	public final Label[] getLabels() {
-		return labels.toArray(new Label[0]);
+	public final Set<Label> getLabels() {
+		return labels;
 	}
 	
 	/**
@@ -72,7 +73,15 @@ public class Instance implements InstanceComponent {
 	public final boolean containLabel(final Label label) {
 		return labels.contains(label);
 	}
-
+	
+	/**
+	 * @param labelSet the labels
+	 * @return contain or not
+	 */
+	public final boolean containLabel(final Collection<Label> labelSet) {
+		return labels.containsAll(labelSet);
+	}
+	
 	/**
 	 * @param out buffered writer
 	 * @throws IOException IOException

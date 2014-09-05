@@ -1,5 +1,7 @@
 package xlong.instance;
 
+import java.util.Set;
+
 /**
  * InstanceComponent.
  */
@@ -17,6 +19,6 @@ public interface InstanceComponent {
 	/**
 	 * @return the labels.
 	 */
-	Label[] getLabels();
+	Set<Label> getLabels();
 	
 }

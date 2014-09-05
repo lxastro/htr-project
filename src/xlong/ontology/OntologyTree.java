@@ -1,5 +1,7 @@
 package xlong.ontology;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -7,12 +9,21 @@ import java.util.Map;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.vocabulary.RDFS;
+
 /**
  * 
  * @author longx
  *
  */
 public final class OntologyTree implements Comparable<OntologyTree>  {
+	/** */
+	private static String typeStart = "http://dbpedia.org/ontology/";
 	/** */
 	private final String name;
 	/** */
@@ -30,7 +41,25 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 		this.parents = new TreeSet<OntologyTree>();
 		this.sons = new TreeSet<OntologyTree>();
 	}
-	
+
+	/**
+	 * @param typeStartPar the typeStart to set
+	 */
+	public void setTypeStart(final String typeStartPar) {
+		typeStart = typeStartPar;
+	}
+
+	/**
+	 * 
+	 * @param owlPath the path of .owl file
+	 * @return the ontologyTree root
+	 * @throws IOException IOException
+	 */
+	public static OntologyTree getTree(final String owlPath) throws IOException {
+		 Map<String, HashSet<String>> subClassOfMap = getSubClassOf(owlPath);
+		 return getTree(subClassOfMap);
+	}
+
 	/**
 	 * @param subClassOfMap subClassOfMap
 	 */
@@ -96,6 +125,40 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 		}
 		
 		return root;
+	}
+
+	
+	/**
+	 * Read subclasof relationship from DBpedia ontology owl file.
+	 * @param owlPath
+	 *            ontology owl file path.
+	 * @return the subclassof relationship map.
+	 * @throws IOException IOException
+	 */
+	public static Map<String, HashSet<String>> getSubClassOf(final String owlPath)
+			throws IOException {
+		final Model dbpedia = ModelFactory.createOntologyModel();
+		dbpedia.read(new FileInputStream(owlPath), "");
+		final StmtIterator stmts = dbpedia.listStatements(null,
+				RDFS.subClassOf, (RDFNode) null);
+		Map<String, HashSet<String>> subClassMap = new HashMap<String, HashSet<String>>();
+
+		while (stmts.hasNext()) {
+			final Statement stmt = stmts.next();
+			String sub = stmt.getSubject().toString().trim();
+			String obj = stmt.getObject().toString().trim();
+			if (!sub.equals(obj) && sub.startsWith(typeStart) && obj.startsWith(typeStart)) {
+				sub = sub.substring(typeStart.length());
+				obj = obj.substring(typeStart.length());
+				if (sub.length() != 0 && obj.length() != 0) {
+					if (!subClassMap.containsKey(sub)) {
+						subClassMap.put(sub, new HashSet<String>());
+					}
+					subClassMap.get(sub).add(obj);
+				}
+			}
+		}
+		return subClassMap;
 	}
 	
 	/**

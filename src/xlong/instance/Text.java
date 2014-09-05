@@ -12,7 +12,7 @@ public class Text implements Property {
 	/**
 	 * @param s the text
 	 */
-	Text(final String s) {
+	public Text(final String s) {
 		this.text = s;
 	}
 	
