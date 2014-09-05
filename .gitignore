@@ -1,0 +1,7 @@
+.checkstyle
+*.class
+result/
+temp/
+/bin/
+
+*.properties
