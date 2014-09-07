@@ -1,4 +1,4 @@
-package xlong.instance;
+package xlong.sample;
 
 /**
  * Interface for properties.

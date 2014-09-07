@@ -1,4 +1,4 @@
-package xlong.instance;
+package xlong.sample;
 
 import java.util.Collection;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-package xlong.instance;
+package xlong.sample;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,7 +12,7 @@ import java.util.TreeSet;
 /**
  * Instance to store property and labels.
  */
-public class Instance implements InstanceComponent {
+public class Sample implements SampleComponent {
 	/** Property of a instance. */
 	private final Property property;
 	/** Labels of a instance. */
@@ -23,7 +23,7 @@ public class Instance implements InstanceComponent {
 	 * @param property the property
 	 * @param labels the labels
 	 */
-	public Instance(final Property property, final Collection<Label> labels) {
+	public Sample(final Property property, final Collection<Label> labels) {
 		this.property = property;
 		
 		String str = Labels.labelsToString(labels);
@@ -40,7 +40,7 @@ public class Instance implements InstanceComponent {
 	 * @param pFactory a property factory
 	 * @throws IOException IOException
 	 */
-	public Instance(final BufferedReader in, final Properties pFactory) throws IOException {
+	public Sample(final BufferedReader in, final Properties pFactory) throws IOException {
 		property = pFactory.getProperty(in.readLine());
 		labels = Labels.loadFromString(in.readLine());
 	}

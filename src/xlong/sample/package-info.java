@@ -5,4 +5,4 @@
  * @author longx
  *
  */
-package xlong.instance;
+package xlong.sample;

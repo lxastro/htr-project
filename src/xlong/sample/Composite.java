@@ -1,4 +1,4 @@
-package xlong.instance;
+package xlong.sample;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -16,9 +16,9 @@ import xlong.ontology.OntologyTree;
 /**
  * 
  */
-public class Composite implements InstanceComponent {
+public class Composite implements SampleComponent {
 	/** */
-	private final Vector<Instance> instances;
+	private final Vector<Sample> instances;
 	/** */
 	private final Vector<Composite> composites;
 	/** */
@@ -28,7 +28,7 @@ public class Composite implements InstanceComponent {
 	 * @param label the label
 	 */
 	public Composite(final Label label) {
-		instances = new Vector<Instance>();
+		instances = new Vector<Sample>();
 		composites = new Vector<Composite>();
 		this.label = label;
 	}
@@ -65,7 +65,7 @@ public class Composite implements InstanceComponent {
 	 * @throws IOException IOException
 	 */
 	public Composite(final BufferedReader in, final Properties pFactory) throws IOException {
-		instances = new Vector<Instance>();
+		instances = new Vector<Sample>();
 		composites = new Vector<Composite>();
 		in.readLine();
 		this.label = Labels.loadFromString(in.readLine()).first();
@@ -81,7 +81,7 @@ public class Composite implements InstanceComponent {
 		in.mark(10);
 		while (!(in.read() == '}')) {
 			in.reset();
-			addInstance(new Instance(in, pFactory));
+			addInstance(new Sample(in, pFactory));
 			in.mark(10);
 		}
 		in.readLine();
@@ -94,7 +94,7 @@ public class Composite implements InstanceComponent {
 	 */
 	public Composite(final String filePath, final Properties pFactory) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader(filePath));
-		instances = new Vector<Instance>();
+		instances = new Vector<Sample>();
 		composites = new Vector<Composite>();
 		in.readLine();
 		this.label = Labels.loadFromString(in.readLine()).first();
@@ -110,7 +110,7 @@ public class Composite implements InstanceComponent {
 		in.mark(10);
 		while (!(in.read() == '}')) {
 			in.reset();
-			addInstance(new Instance(in, pFactory));
+			addInstance(new Sample(in, pFactory));
 			in.mark(10);
 		}
 		in.readLine();
@@ -120,10 +120,10 @@ public class Composite implements InstanceComponent {
 	@Override
 	public final int countInstance() {
 		int size = 0;
-		for (InstanceComponent component:instances) {
+		for (SampleComponent component:instances) {
 			size += component.countInstance();
 		}
-		for (InstanceComponent component:composites) {
+		for (SampleComponent component:composites) {
 			size += component.countInstance();
 		}
 		return size;
@@ -153,7 +153,7 @@ public class Composite implements InstanceComponent {
 	 * 
 	 * @return instances
 	 */
-	public final Vector<Instance> getInstances() {
+	public final Vector<Sample> getInstances() {
 		return instances;
 	}
 	
@@ -169,7 +169,7 @@ public class Composite implements InstanceComponent {
 	 * 
 	 * @param instance instance to add
 	 */
-	public final void addInstance(final Instance instance) {
+	public final void addInstance(final Sample instance) {
 		boolean flag = true;
 		for (Composite composite:composites) {
 			if (instance.containLabel(composite.getLabel())) {
@@ -200,7 +200,7 @@ public class Composite implements InstanceComponent {
 		for (Composite composite:composites) {
 			composite.save(out);
 		}
-		for (Instance instance:instances) {
+		for (Sample instance:instances) {
 			instance.save(out);
 		}
 		out.write("}\n");

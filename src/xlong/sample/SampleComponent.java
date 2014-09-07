@@ -1,11 +1,11 @@
-package xlong.instance;
+package xlong.sample;
 
 import java.util.Set;
 
 /**
  * InstanceComponent.
  */
-public interface InstanceComponent {
+public interface SampleComponent {
 	/**
 	 * @return number of instances in this component.
 	 */

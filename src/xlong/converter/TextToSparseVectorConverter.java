@@ -14,11 +14,11 @@ import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import xlong.converter.tokenizer.Tokenizer;
-import xlong.instance.Instance;
-import xlong.instance.Composite;
-import xlong.instance.Label;
-import xlong.instance.SparseVector;
-import xlong.instance.Text;
+import xlong.sample.Composite;
+import xlong.sample.Sample;
+import xlong.sample.Label;
+import xlong.sample.SparseVector;
+import xlong.sample.Text;
 
 /**
  * Class to convert string to word vectore
@@ -177,7 +177,7 @@ public class TextToSparseVectorConverter {
 	}
 	
 	public void buildDictionary(Composite textComposite) {
-		for (Instance instance:textComposite.getInstances()) {
+		for (Sample instance:textComposite.getInstances()) {
 			buildDictionary(((Text) instance.getProperty()).getText());
 		}
 		for (Composite composite:textComposite.getComposites()) {
@@ -185,15 +185,15 @@ public class TextToSparseVectorConverter {
 		}
 	}
 	
-	public Instance convert(Instance textInstance) {
+	public Sample convert(Sample textInstance) {
 		SparseVector sv = new SparseVector(convert((((Text) textInstance.getProperty()).getText())));
 		Set<Label> labels = textInstance.getLabels(); 
-		return new Instance(sv, labels);
+		return new Sample(sv, labels);
 	}
 	
 	public Composite convert(Composite textComposite) {
 		Composite vectorComposite = new Composite(textComposite.getLabel());
-		for (Instance instance:textComposite.getInstances()) {
+		for (Sample instance:textComposite.getInstances()) {
 			vectorComposite.addInstance(convert(instance));
 		}
 		for (Composite composite:textComposite.getComposites()) {
