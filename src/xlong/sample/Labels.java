@@ -145,4 +145,11 @@ public final class Labels {
 	public static String labelsToString(final Label label) {
 		return label.getText();
 	}
+	
+	/**
+	 * @return number of labels
+	 */
+	public static int cntLabel() {
+		return labels.size();
+	}
 }

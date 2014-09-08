@@ -1,8 +1,13 @@
 /**
  * Project : Classify URLs
  */
-package xlong.converter;
+package xlong.sample.converter;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -13,12 +18,12 @@ import java.util.Set;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import xlong.converter.tokenizer.Tokenizer;
 import xlong.sample.Composite;
-import xlong.sample.Sample;
 import xlong.sample.Label;
+import xlong.sample.Sample;
 import xlong.sample.SparseVector;
 import xlong.sample.Text;
+import xlong.sample.tokenizer.Tokenizer;
 
 /**
  * Class to convert string to word vectore
@@ -177,7 +182,7 @@ public class TextToSparseVectorConverter {
 	}
 	
 	public void buildDictionary(Composite textComposite) {
-		for (Sample instance:textComposite.getInstances()) {
+		for (Sample instance:textComposite.getSamples()) {
 			buildDictionary(((Text) instance.getProperty()).getText());
 		}
 		for (Composite composite:textComposite.getComposites()) {
@@ -185,16 +190,16 @@ public class TextToSparseVectorConverter {
 		}
 	}
 	
-	public Sample convert(Sample textInstance) {
-		SparseVector sv = new SparseVector(convert((((Text) textInstance.getProperty()).getText())));
-		Set<Label> labels = textInstance.getLabels(); 
+	public Sample convert(Sample textSample) {
+		SparseVector sv = new SparseVector(convert((((Text) textSample.getProperty()).getText())));
+		Set<Label> labels = textSample.getLabels(); 
 		return new Sample(sv, labels);
 	}
 	
 	public Composite convert(Composite textComposite) {
 		Composite vectorComposite = new Composite(textComposite.getLabel());
-		for (Sample instance:textComposite.getInstances()) {
-			vectorComposite.addInstance(convert(instance));
+		for (Sample instance:textComposite.getSamples()) {
+			vectorComposite.addSample(convert(instance));
 		}
 		for (Composite composite:textComposite.getComposites()) {
 			vectorComposite.addComposite(convert(composite));
@@ -205,4 +210,21 @@ public class TextToSparseVectorConverter {
 	public TreeMap<String, Integer> getDictionary() {
 		return dictionary;
 	}
+	
+	public void save(String filePath) throws IOException {
+		FileOutputStream fos = new FileOutputStream(filePath);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(dictionary);
+        oos.close();
+	}
+	
+	public static TextToSparseVectorConverter load(String filePath) throws Exception {
+		TextToSparseVectorConverter converter = new TextToSparseVectorConverter(null);
+		FileInputStream fis = new FileInputStream(filePath);
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		converter.dictionary = (TreeMap<String, Integer>) ois.readObject();
+		ois.close();
+		return converter;
+	}
+	
 }

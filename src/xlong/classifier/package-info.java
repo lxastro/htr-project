@@ -5,4 +5,4 @@
  * @author longx
  *
  */
-package xlong.ontology;
+package xlong.classifier;

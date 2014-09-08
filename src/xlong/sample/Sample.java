@@ -44,8 +44,15 @@ public class Sample implements SampleComponent {
 		property = pFactory.getProperty(in.readLine());
 		labels = Labels.loadFromString(in.readLine());
 	}
+	
+	/**
+	 * @param property the property
+	 */
+	public Sample(final Property property) {
+		this(property, new TreeSet<Label>());
+	}
 	@Override
-	public final int countInstance() {
+	public final int countSample() {
 		return 1;
 	}
 

@@ -18,7 +18,7 @@ import xlong.ontology.OntologyTree;
  */
 public class Composite implements SampleComponent {
 	/** */
-	private final Vector<Sample> instances;
+	private final Vector<Sample> samples;
 	/** */
 	private final Vector<Composite> composites;
 	/** */
@@ -28,7 +28,7 @@ public class Composite implements SampleComponent {
 	 * @param label the label
 	 */
 	public Composite(final Label label) {
-		instances = new Vector<Sample>();
+		samples = new Vector<Sample>();
 		composites = new Vector<Composite>();
 		this.label = label;
 	}
@@ -65,7 +65,7 @@ public class Composite implements SampleComponent {
 	 * @throws IOException IOException
 	 */
 	public Composite(final BufferedReader in, final Properties pFactory) throws IOException {
-		instances = new Vector<Sample>();
+		samples = new Vector<Sample>();
 		composites = new Vector<Composite>();
 		in.readLine();
 		this.label = Labels.loadFromString(in.readLine()).first();
@@ -81,7 +81,7 @@ public class Composite implements SampleComponent {
 		in.mark(10);
 		while (!(in.read() == '}')) {
 			in.reset();
-			addInstance(new Sample(in, pFactory));
+			addSample(new Sample(in, pFactory));
 			in.mark(10);
 		}
 		in.readLine();
@@ -94,7 +94,7 @@ public class Composite implements SampleComponent {
 	 */
 	public Composite(final String filePath, final Properties pFactory) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader(filePath));
-		instances = new Vector<Sample>();
+		samples = new Vector<Sample>();
 		composites = new Vector<Composite>();
 		in.readLine();
 		this.label = Labels.loadFromString(in.readLine()).first();
@@ -110,7 +110,7 @@ public class Composite implements SampleComponent {
 		in.mark(10);
 		while (!(in.read() == '}')) {
 			in.reset();
-			addInstance(new Sample(in, pFactory));
+			addSample(new Sample(in, pFactory));
 			in.mark(10);
 		}
 		in.readLine();
@@ -118,13 +118,13 @@ public class Composite implements SampleComponent {
 	}
 	
 	@Override
-	public final int countInstance() {
+	public final int countSample() {
 		int size = 0;
-		for (SampleComponent component:instances) {
-			size += component.countInstance();
+		for (SampleComponent component:samples) {
+			size += component.countSample();
 		}
 		for (SampleComponent component:composites) {
-			size += component.countInstance();
+			size += component.countSample();
 		}
 		return size;
 	}
@@ -151,10 +151,10 @@ public class Composite implements SampleComponent {
 	
 	/**
 	 * 
-	 * @return instances
+	 * @return samples
 	 */
-	public final Vector<Sample> getInstances() {
-		return instances;
+	public final Vector<Sample> getSamples() {
+		return samples;
 	}
 	
 	/**
@@ -167,18 +167,18 @@ public class Composite implements SampleComponent {
 	
 	/**
 	 * 
-	 * @param instance instance to add
+	 * @param sample sample to add
 	 */
-	public final void addInstance(final Sample instance) {
+	public final void addSample(final Sample sample) {
 		boolean flag = true;
 		for (Composite composite:composites) {
-			if (instance.containLabel(composite.getLabel())) {
-				composite.addInstance(instance);
+			if (sample.containLabel(composite.getLabel())) {
+				composite.addSample(sample);
 				flag = false;
 			}
 		}
 		if (flag) {
-			instances.add(instance);
+			samples.add(sample);
 		}
 	}
 	
@@ -200,8 +200,8 @@ public class Composite implements SampleComponent {
 		for (Composite composite:composites) {
 			composite.save(out);
 		}
-		for (Sample instance:instances) {
-			instance.save(out);
+		for (Sample sample:samples) {
+			sample.save(out);
 		}
 		out.write("}\n");
 	}
@@ -223,7 +223,7 @@ public class Composite implements SampleComponent {
 	 */
 	private int[] percentToCount(final int[] percent) {
 		int npart = percent.length;
-		int n = instances.size();
+		int n = samples.size();
 		int[] ns = new int[npart];
 		int s = 0;
 		int sp = 0;
@@ -255,13 +255,13 @@ public class Composite implements SampleComponent {
 	public final Vector<Composite> split(final int[] percent, final Random rand) {
 		int npart = percent.length;
 		int[] cnt = percentToCount(percent);
-		Collections.shuffle(instances, rand);
+		Collections.shuffle(samples, rand);
 		Vector<Composite> parts = new Vector<Composite>();
 		int s = 0;
 		for (int i = 0; i < npart; i++) {
 			Composite part = new  Composite(label);
 			for (int j = s; j < s + cnt[i]; j++) {
-				part.addInstance(instances.get(j));
+				part.addSample(samples.get(j));
 			}
 			parts.add(part);
 			s += cnt[i];
