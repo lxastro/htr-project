@@ -6,12 +6,12 @@ import xlong.sample.Composite;
 import xlong.sample.Property;
 import xlong.sample.Sample;
 
-public class FlatSingleLabelMultiClassClassifier extends AbstractClassifier {
+public class FlatSingleLabelClassifier extends AbstractClassifier {
 	
 	private weka.classifiers.Classifier wekaClassifier;
 	private SparseVectorSampleToWekaInstanceConverter converter;
 	
-	public FlatSingleLabelMultiClassClassifier(int numOfAtt) {
+	public FlatSingleLabelClassifier(int numOfAtt) {
 		wekaClassifier = new weka.classifiers.bayes.NaiveBayesMultinomial();
 		//wekaClassifier = new weka.classifiers.functions.SMO();
 		converter = new SparseVectorSampleToWekaInstanceConverter(numOfAtt);

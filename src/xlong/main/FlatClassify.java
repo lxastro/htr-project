@@ -7,7 +7,7 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import xlong.classifier.Classifier;
-import xlong.classifier.FlatSingleLabelMultiClassClassifier;
+import xlong.classifier.FlatSingleLabelClassifier;
 import xlong.data.IO.UrlMapIO;
 import xlong.evaluater.Evaluater;
 import xlong.evaluater.SingleLabelEvaluater;
@@ -68,7 +68,7 @@ public class FlatClassify {
 		System.out.println(test.countSample());
 		System.out.println(converter.getDictionary().size());
 		
-		Classifier classifier = new FlatSingleLabelMultiClassClassifier(converter.getDictionary().size());
+		Classifier classifier = new FlatSingleLabelClassifier(converter.getDictionary().size());
 		System.out.println("Train...");
 		classifier.train(train);
 		System.out.println(classifier.getNumOfClass());
