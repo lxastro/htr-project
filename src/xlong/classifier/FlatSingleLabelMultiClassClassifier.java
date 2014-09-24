@@ -11,9 +11,15 @@ public class FlatSingleLabelMultiClassClassifier extends AbstractClassifier {
 	private weka.classifiers.Classifier wekaClassifier;
 	private SparseVectorSampleToWekaInstanceConverter converter;
 	
-	public FlatSingleLabelMultiClassClassifier(int numOfAtt, int numOfClass) {
+	public FlatSingleLabelMultiClassClassifier(int numOfAtt) {
 		wekaClassifier = new weka.classifiers.bayes.NaiveBayesMultinomial();
-		converter = new SparseVectorSampleToWekaInstanceConverter(numOfAtt, numOfClass);
+		//wekaClassifier = new weka.classifiers.functions.SMO();
+		converter = new SparseVectorSampleToWekaInstanceConverter(numOfAtt);
+	}
+	
+	@Override
+	public int getNumOfClass() {
+		return converter.getNumOfClass();
 	}
 
 	@Override
@@ -34,6 +40,11 @@ public class FlatSingleLabelMultiClassClassifier extends AbstractClassifier {
 	public double[] getDistribution(Property property) throws Exception {
 		Sample sample = new Sample(property);
 		return getDistribution(sample);
+	}
+
+	@Override
+	public int label2id(String label) {
+		return converter.label2id(label);
 	}
 
 }

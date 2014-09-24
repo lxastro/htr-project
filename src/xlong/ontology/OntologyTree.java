@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
@@ -32,6 +33,12 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 	private final TreeSet<OntologyTree> parents;
 	/** */
 	private static TreeSet<String> types;
+	/** */
+	private static final Map<String, TreeSet<String>> ancestorsMap = new TreeMap<String, TreeSet<String>>();
+	
+	static {
+		ancestorsMap.put("root", new TreeSet<String>());
+	}
 	
 	/**
 	 * @param name name
@@ -71,6 +78,14 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 				types.add(type);
 			}
 		}
+	}
+	
+	public boolean isAncestor(String name, String ancestor) {
+		return ancestorsMap.get(name).contains(ancestor);
+	}
+	
+	public Map<String, TreeSet<String>> getAncestorsMap () {
+		return ancestorsMap;
 	}
 
 	/**
@@ -167,6 +182,14 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 	public void addSon(final OntologyTree son) {
 		sons.add(son);
 		son.parents.add(this);
+		
+		TreeSet<String> ancestors = ancestorsMap.get(son.getTypeName());
+		if (ancestors == null) {
+			ancestors = new TreeSet<String>();
+			ancestorsMap.put(son.getTypeName(), ancestors);
+		}
+		ancestors.add(this.getTypeName());
+		ancestors.addAll(ancestorsMap.get(this.getTypeName()));
 	}
 
 	/**

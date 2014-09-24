@@ -15,6 +15,7 @@ import java.util.TreeSet;
 
 import xlong.data.IO.UrlTypePairIO;
 import xlong.data.filter.EntityFilter;
+import xlong.ontology.OntologyTree;
 import xlong.util.MyWriter;
 import xlong.util.PropertiesUtil;
 
@@ -117,16 +118,17 @@ public class Entity implements Comparable<Entity>{
 	 * 'http://dbpedia.org/ontology/'. If type A is subclass of type B, then
 	 * exclude type B.
 	 * 
-	 * @param subClassMap
+	 * @param ontology
 	 *            the subclass of relationship map.
 	 * @return success or not.
 	 */
-	public void filterTypes(Map<String, HashSet<String>> subClassMap) {
+	public void filterTypes(OntologyTree ontology) {
 		HashSet<String> dels = new HashSet<String>();
-		if (subClassMap != null) {
+		if (ontology != null) {
+			Map<String, TreeSet<String>> ancestorsMap = ontology.getAncestorsMap();
 			for (String type : types) {
-				if (subClassMap.containsKey(type)) {
-					dels.addAll(subClassMap.get(type));
+				if (ancestorsMap.containsKey(type)) {
+					dels.addAll(ancestorsMap.get(type));
 				}
 			}
 		}
@@ -147,7 +149,7 @@ public class Entity implements Comparable<Entity>{
 		urls = new ArrayList<String>(newUrls);
 	}
 	
-	public static Collection<Entity> generateEntities(ArrayList<String[]> types, ArrayList<String[]> urls, Map<String, HashSet<String>> subClassMap) {
+	public static Collection<Entity> generateEntities(ArrayList<String[]> types, ArrayList<String[]> urls, OntologyTree ontology) {
 		HashMap<String, Entity> entityMap = new HashMap<String, Entity>();
 		for (String[] ss:types){
 			if (!entityMap.containsKey(ss[0])) {
@@ -164,13 +166,13 @@ public class Entity implements Comparable<Entity>{
 		}
 		
 		for (Entity en:entityMap.values()){
-			en.filterTypes(subClassMap);
+			en.filterTypes(ontology);
 			en.filterUrls();
 		}
 		return entityMap.values();
 	}
 	
-	public static Collection<Entity> generateEntities(String typesFile, String urlsFile, Map<String, HashSet<String>> subClassMap) throws IOException {
+	public static Collection<Entity> generateEntities(String typesFile, String urlsFile, OntologyTree ontology) throws IOException {
 		HashMap<String, Entity> entityMap = new HashMap<String, Entity>();
 		UrlTypePairIO typeIO = new UrlTypePairIO(typesFile);
 		String[] ss;
@@ -192,7 +194,7 @@ public class Entity implements Comparable<Entity>{
 		}
 		
 		for (Entity en:entityMap.values()){
-			en.filterTypes(subClassMap);
+			en.filterTypes(ontology);
 			en.filterUrls();
 		}	
 		urlIO.close();

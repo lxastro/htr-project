@@ -141,7 +141,7 @@ public class BuildInstances {
 		System.out.println(flatComposite.countSample());
 		System.out.println(converter.getDictionary().size());
 		
-		SparseVectorSampleToWekaInstanceConverter converter2 = new SparseVectorSampleToWekaInstanceConverter(converter.getDictionary().size(), Labels.cntLabel());
+		SparseVectorSampleToWekaInstanceConverter converter2 = new SparseVectorSampleToWekaInstanceConverter(converter.getDictionary().size());
 		for (Sample sample:flatComposite.getSamples()) {
 			converter2.addSample(sample);
 		}
@@ -149,7 +149,7 @@ public class BuildInstances {
 		System.out.println(instances.numClasses());
 		System.out.println(instances.sumOfWeights());
 		System.out.println(instances.numAttributes());
-		System.out.println(instances.get(2880000).toString());
+		System.out.println(instances.get(2000000).toString());
 		
 	}
 }

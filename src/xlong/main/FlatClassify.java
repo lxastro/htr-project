@@ -1,28 +1,16 @@
 package xlong.main;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Random;
-import java.util.Vector;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.TreeSet;
+import java.util.Vector;
 
-import weka.core.Instances;
 import xlong.classifier.Classifier;
 import xlong.classifier.FlatSingleLabelMultiClassClassifier;
-import xlong.classifier.TextFlatSingleLabelMultiClassClassifier;
-import xlong.classifier.converter.SparseVectorSampleToWekaInstanceConverter;
-import xlong.data.Entity;
-import xlong.data.IO.NTripleReader;
-import xlong.data.IO.UrlEntityMapIO;
 import xlong.data.IO.UrlMapIO;
-import xlong.data.filter.ExistTypeFilter;
-import xlong.data.filter.ExistUrlFilter;
-import xlong.data.processer.SimplifyProcesser;
-import xlong.data.processer.Triple2PairProcesser;
-import xlong.data.processer.UrlNormalizeProcesser;
-import xlong.ontology.OntologyTree;
+import xlong.evaluater.Evaluater;
+import xlong.evaluater.SingleLabelEvaluater;
 import xlong.sample.Composite;
 import xlong.sample.Sample;
 import xlong.sample.Labels;
@@ -31,10 +19,9 @@ import xlong.sample.Text;
 import xlong.sample.Texts;
 import xlong.sample.converter.TextToSparseVectorConverter;
 import xlong.sample.tokenizer.SingleWordTokenizer;
-import xlong.util.MyWriter;
 import xlong.util.PropertiesUtil;
 
-public class Classify {
+public class FlatClassify {
 	public static void main(String[] args) throws Exception{
 		
 		// ----------------------------Data process---------------------------------
@@ -46,7 +33,7 @@ public class Classify {
 		PropertiesUtil.getProperty("DBpedia_ontology.owl");
 		HashMap<String, TreeSet<String>> urlMap;
 		Composite flatComposite;
-		TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer(), 1000);
+		TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer(), 100000);
 		
 //		urlMap = UrlMapIO.read("result/UrlMap.txt");
 //		System.out.println(urlMap.size());
@@ -58,14 +45,7 @@ public class Classify {
 //		}
 //		System.out.println(flatComposite.countSample());
 //		flatComposite.save("result/flatText");
-		
-//		Classifier classifier = new TextFlatSingleLabelMultiClassClassifier(Labels.cntLabel());
-//		classifier.train(flatComposite);
-//		double[] result = classifier.getDistribution(flatComposite.getSamples().firstElement());
-//		for (double i:result) {
-//			System.out.println(i);
-//		}	
-		
+//		
 //		flatComposite = new Composite("result/flatText", new Texts());
 //		System.out.println(flatComposite.countSample());
 //		converter.buildDictionary(flatComposite);
@@ -79,20 +59,31 @@ public class Classify {
 		
 		converter = TextToSparseVectorConverter.load("result/dictionary");
 		flatComposite = new Composite("result/flat", new SparseVectors());
+		Vector<Composite> composites = flatComposite.split(new int[] {70, 30}, new Random());
+		Composite train = composites.get(0);
+		Composite test = composites.get(1);
+		
 		System.out.println(flatComposite.countSample());
+		System.out.println(train.countSample());
+		System.out.println(test.countSample());
 		System.out.println(converter.getDictionary().size());
 		
-		Classifier classifier = new FlatSingleLabelMultiClassClassifier(converter.getDictionary().size(), Labels.cntLabel());
-		classifier.train(flatComposite);
+		Classifier classifier = new FlatSingleLabelMultiClassClassifier(converter.getDictionary().size());
+		System.out.println("Train...");
+		classifier.train(train);
+		System.out.println(classifier.getNumOfClass());
 		
-		double[] result = classifier.getDistribution(flatComposite.getSamples().firstElement());
-		System.out.println(flatComposite.getSamples().firstElement().getLabels().iterator().next());
-		int i = 0;
-		for (double d:result) {
-			if (d > 0.01) {
-				System.out.println(i + " : " + d);
+		System.out.println("Evaluate...");
+		Evaluater evaluater = new SingleLabelEvaluater(classifier);
+		int cnt = 0;
+		for (Sample sample:test.getSamples()) {
+			cnt ++;
+			if (cnt % 100000 == 0) {
+				System.out.println(cnt);
 			}
-			i++;
+			evaluater.evaluate(sample);
 		}
+		
+		System.out.println(evaluater.getAccuracy());
 	}
 }
