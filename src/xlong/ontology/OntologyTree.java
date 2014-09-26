@@ -3,6 +3,7 @@ package xlong.ontology;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -78,6 +79,13 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 				types.add(type);
 			}
 		}
+	}
+	
+	// include name.
+	public TreeSet<String> getPath(String name) {
+		TreeSet<String> names = new TreeSet<String> (ancestorsMap.get(name));
+		names.add(name);
+		return names;
 	}
 	
 	public boolean isAncestor(String name, String ancestor) {
@@ -222,6 +230,15 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 			tree.addSon(subTree);
 		}
 		return tree;
+	}
+	
+	public Collection<String> getSubTreeNames() {
+		HashSet<String> nameSet = new HashSet<String>();
+		nameSet.add(name);
+		for (OntologyTree subtree:sons) {
+			nameSet.addAll(subtree.getSubTreeNames());
+		}
+		return nameSet;
 	}
 	
 	/**

@@ -143,9 +143,9 @@ public class StuckPachinkoSingleLabelClassifier extends AbstractClassifier  {
 		Sample vecSample = converter.convert(sample);
 		SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(label);
 		int classID = (int)(selecter.classifyInstance(adapter.adaptSample(vecSample)) + 0.5);
-		String str = adapter.getDataSet().classAttribute().value(classID);
+		String subLabel = adapter.getDataSet().classAttribute().value(classID);
 		//System.out.println(str);
-		return str;
+		return test(subLabel, sample);
 	}
 
 }

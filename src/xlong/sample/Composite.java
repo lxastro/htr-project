@@ -5,7 +5,10 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
@@ -275,7 +278,38 @@ public class Composite implements SampleComponent {
 		return parts;
 	}
 	
-	public final void cutBranch() {
-		
+	public final void cutBranch(int minSamples) {
+		Iterator<Composite> iterator = composites.iterator();
+		while (iterator.hasNext()) {
+			Composite composite = iterator.next();
+			if (composite.countSample() < minSamples) {
+				samples.addAll(composite.getAllSamples());
+				iterator.remove();
+			} else {
+				composite.cutBranch(minSamples);
+			}
+		}
+	}
+	
+	public final Collection<Sample> getAllSamples() {
+		HashSet<Sample> allSamples = new HashSet<Sample>();
+		allSamples.addAll(samples);
+		for (Composite composite:composites) {
+			allSamples.addAll(composite.getAllSamples());
+		}
+		return allSamples;
+	}
+	
+	public void flatComposite(int level) {
+		if (level == 0) {
+			Collection<Sample> allSamples = getAllSamples();
+			samples.clear();
+			samples.addAll(allSamples);
+			composites.clear();
+		} else {
+			for (Composite subcomp:composites) {
+				subcomp.flatComposite(level - 1);
+			}
+		}
 	}
 }

@@ -40,8 +40,12 @@ public class FlatClassify {
 			Sample sample = new Sample(new Text(en.getKey()), Labels.getLabels(en.getValue()));
 			flatComposite.addSample(sample);
 		}
-		
 		System.out.println(flatComposite.countSample());
+		System.out.println(flatComposite.getComposites().size());
+		flatComposite.cutBranch(1);
+		System.out.println(flatComposite.countSample());
+		System.out.println(flatComposite.getComposites().size());
+		
 		Vector<Composite> composites = flatComposite.split(new int[] {70, 30}, new Random());
 		train = composites.get(0);
 		System.out.println(train.countSample());
