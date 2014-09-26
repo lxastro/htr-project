@@ -8,7 +8,7 @@ import java.util.Map.Entry;
 import java.util.TreeSet;
 
 import weka.core.Instances;
-import xlong.classifier.converter.SparseVectorSampleToWekaInstanceConverter;
+import xlong.classifier.adapter.SparseVectorSampleToWekaInstanceAdapter;
 import xlong.data.Entity;
 import xlong.data.IO.NTripleReader;
 import xlong.data.IO.UrlEntityMapIO;
@@ -141,7 +141,7 @@ public class BuildInstances {
 		System.out.println(flatComposite.countSample());
 		System.out.println(converter.getDictionary().size());
 		
-		SparseVectorSampleToWekaInstanceConverter converter2 = new SparseVectorSampleToWekaInstanceConverter(converter.getDictionary().size());
+		SparseVectorSampleToWekaInstanceAdapter converter2 = new SparseVectorSampleToWekaInstanceAdapter(converter.getDictionary().size());
 		for (Sample sample:flatComposite.getSamples()) {
 			converter2.addSample(sample);
 		}

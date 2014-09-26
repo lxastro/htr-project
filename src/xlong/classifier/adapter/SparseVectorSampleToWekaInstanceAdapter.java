@@ -1,4 +1,4 @@
-package xlong.classifier.converter;
+package xlong.classifier.adapter;
 
 import java.util.ArrayList;
 
@@ -17,13 +17,13 @@ import xlong.sample.Label;
 import xlong.sample.Sample;
 import xlong.sample.SparseVector;
 
-public class SparseVectorSampleToWekaInstanceConverter{
+public class SparseVectorSampleToWekaInstanceAdapter{
 	private int numOfAttributes;
 	private Vector<Instance> instanceVec;
 	private Map<String, Integer> labelMap;
 	private Instances instances;
 	
-	public SparseVectorSampleToWekaInstanceConverter(int numOfAtt) {
+	public SparseVectorSampleToWekaInstanceAdapter(int numOfAtt) {
 		numOfAttributes = numOfAtt;
 		labelMap = new TreeMap<String, Integer>();
 		instanceVec = new Vector<Instance>();
