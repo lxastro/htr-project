@@ -1,5 +1,5 @@
 package xlong.classifier;
 
-public abstract class AbstractClassifier{
+public abstract class AbstractClassifier implements Classifier{
 
 }

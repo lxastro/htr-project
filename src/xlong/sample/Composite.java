@@ -275,5 +275,7 @@ public class Composite implements SampleComponent {
 		return parts;
 	}
 	
-	
+	public final void cutBranch() {
+		
+	}
 }

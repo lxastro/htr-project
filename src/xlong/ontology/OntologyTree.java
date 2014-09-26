@@ -162,6 +162,14 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 			final Statement stmt = stmts.next();
 			String sub = stmt.getSubject().toString().trim();
 			String obj = stmt.getObject().toString().trim();
+			if (sub.startsWith(typeStart) && obj.equals("http://www.w3.org/2002/07/owl#Thing")) {
+				sub = sub.substring(typeStart.length());
+				if (sub.length() != 0) {
+					if (!subClassMap.containsKey(sub)) {
+						subClassMap.put(sub, new HashSet<String>());
+					}
+				}				
+			}
 			if (!sub.equals(obj) && sub.startsWith(typeStart) && obj.startsWith(typeStart)) {
 				sub = sub.substring(typeStart.length());
 				obj = obj.substring(typeStart.length());
@@ -206,6 +214,15 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 	public TreeSet<OntologyTree> getSons() {
 		return sons;
 	}
+		
+	public OntologyTree toFlatTree() {
+		OntologyTree tree = new OntologyTree("root");
+		for (String type:types) {
+			OntologyTree subTree = new OntologyTree(type);
+			tree.addSon(subTree);
+		}
+		return tree;
+	}
 	
 	/**
 	 * 
@@ -222,6 +239,10 @@ public final class OntologyTree implements Comparable<OntologyTree>  {
 			str += son.toString(level + 1);
 		}
 		return str;
+	}
+	
+	public static TreeSet<String> getTypes() {
+		return types;
 	}
 	
 	@Override

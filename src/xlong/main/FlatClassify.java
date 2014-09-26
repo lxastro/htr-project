@@ -7,18 +7,16 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import xlong.classifier.Classifier;
-import xlong.classifier.FlatSingleLabelClassifier;
+import xlong.classifier.StuckPachinkoSingleLabelClassifier;
 import xlong.data.IO.UrlMapIO;
+import xlong.evaluater.AccuracyEvaluater;
 import xlong.evaluater.Evaluater;
-import xlong.evaluater.SingleLabelEvaluater;
+import xlong.ontology.OntologyTree;
 import xlong.sample.Composite;
 import xlong.sample.Sample;
 import xlong.sample.Labels;
-import xlong.sample.SparseVectors;
 import xlong.sample.Text;
 import xlong.sample.Texts;
-import xlong.sample.converter.TextToSparseVectorConverter;
-import xlong.sample.tokenizer.SingleWordTokenizer;
 import xlong.util.PropertiesUtil;
 
 public class FlatClassify {
@@ -28,62 +26,40 @@ public class FlatClassify {
 		// Get properties.
 		PropertiesUtil.init();
 		PropertiesUtil.loadProperties();
-		PropertiesUtil.getProperty("DBpedia_instance_types.nt");
-		PropertiesUtil.getProperty("DBpedia_external_links.nt");
-		PropertiesUtil.getProperty("DBpedia_ontology.owl");
-		HashMap<String, TreeSet<String>> urlMap;
-		Composite flatComposite;
-		TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer(), 100000);
+		Composite train, test;
 		
-//		urlMap = UrlMapIO.read("result/UrlMap.txt");
-//		System.out.println(urlMap.size());
-//	
-//		flatComposite = new Composite();
-//		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
-//			Sample instance = new Sample(new Text(en.getKey()), Labels.getLabels(en.getValue()));
-//			flatComposite.addSample(instance);
-//		}
-//		System.out.println(flatComposite.countSample());
-//		flatComposite.save("result/flatText");
-//		
-//		flatComposite = new Composite("result/flatText", new Texts());
-//		System.out.println(flatComposite.countSample());
-//		converter.buildDictionary(flatComposite);
-//		System.out.println("determine...");
-//		converter.determineDictionary();
-//		System.out.println("convert...");
-//		flatComposite = converter.convert(flatComposite);
-//		System.out.println(flatComposite.countSample());
-//		flatComposite.save("result/flat");
-//		converter.save("result/dictionary");
+		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
+		OntologyTree tree = OntologyTree.getTree(ontologyFile);
+		OntologyTree flatTree = tree.toFlatTree();
 		
-		converter = TextToSparseVectorConverter.load("result/dictionary");
-		flatComposite = new Composite("result/flat", new SparseVectors());
-		Vector<Composite> composites = flatComposite.split(new int[] {70, 30}, new Random());
-		Composite train = composites.get(0);
-		Composite test = composites.get(1);
-		
-		System.out.println(flatComposite.countSample());
-		System.out.println(train.countSample());
-		System.out.println(test.countSample());
-		System.out.println(converter.getDictionary().size());
-		
-		Classifier classifier = new FlatSingleLabelClassifier(converter.getDictionary().size());
-		System.out.println("Train...");
-		classifier.train(train);
-		System.out.println(classifier.getNumOfClass());
-		
-		System.out.println("Evaluate...");
-		Evaluater evaluater = new SingleLabelEvaluater(classifier);
-		int cnt = 0;
-		for (Sample sample:test.getSamples()) {
-			cnt ++;
-			if (cnt % 100000 == 0) {
-				System.out.println(cnt);
-			}
-			evaluater.evaluate(sample);
+		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
+		System.out.println(urlMap.size());
+	
+		Composite flatComposite = new Composite(flatTree);
+		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
+			Sample sample = new Sample(new Text(en.getKey()), Labels.getLabels(en.getValue()));
+			flatComposite.addSample(sample);
 		}
 		
+		System.out.println(flatComposite.countSample());
+		Vector<Composite> composites = flatComposite.split(new int[] {70, 30}, new Random());
+		train = composites.get(0);
+		System.out.println(train.countSample());
+		train.save("result/trainText");	
+		test = composites.get(1);
+		System.out.println(test.countSample());
+		test.save("result/testText");
+		
+		train = new Composite("result/trainText", new Texts());
+		test = new Composite("result/testText", new Texts());
+		
+		Classifier classifier = new StuckPachinkoSingleLabelClassifier(100000);
+		System.out.println("train");
+		classifier.train(train);
+		
+		Evaluater evaluater = new AccuracyEvaluater(classifier);
+		System.out.println("test");
+		evaluater.evaluate(test);	
 		System.out.println(evaluater.getAccuracy());
 	}
 }

@@ -1,40 +1,58 @@
 package xlong.classifier.adapter;
 
 import java.util.ArrayList;
-
-
-
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.Vector;
-
 import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
-import xlong.sample.Label;
 import xlong.sample.Sample;
 import xlong.sample.SparseVector;
 
 public class SparseVectorSampleToWekaInstanceAdapter{
 	private int numOfAttributes;
-	private Vector<Instance> instanceVec;
 	private Map<String, Integer> labelMap;
-	private Instances instances;
+	private Instances dataSet;
 	
-	public SparseVectorSampleToWekaInstanceAdapter(int numOfAtt) {
-		numOfAttributes = numOfAtt;
+	// Just need to save numOfAttributes, pos and labelMap. Create dataSet use initInstances.
+	
+	/**
+	 * @param numOfAtts
+	 * @param labels
+	 * @param pos null means multiClass, else means binaryClass
+	 */
+	public SparseVectorSampleToWekaInstanceAdapter(int numOfAtts, Collection<String> labels) {
+		// get number of attributes
+		numOfAttributes = numOfAtts;
+		// get labels
 		labelMap = new TreeMap<String, Integer>();
-		instanceVec = new Vector<Instance>();
+		for (String label:labels){
+			if (!labelMap.containsKey(label)) {
+				int n = labelMap.size();
+				labelMap.put(label, new Integer(n));
+			}			
+		}
+		// get dataSet
+		dataSet = initInstances(labelMap);
 	}
 	
-	public int label2id(String label) {
-		if (labelMap.containsKey(label)) {
-			return labelMap.get(label);
-		} else {
-			return labelMap.size();
+	private Instances initInstances(Map<String, Integer> labelMap) {
+		ArrayList<Attribute> atts = new ArrayList<Attribute>();
+		ArrayList<String> attVals = new ArrayList<String>(labelMap.keySet());
+		for (Entry<String, Integer> en:labelMap.entrySet()) {
+			attVals.set(en.getValue(), en.getKey());
 		}
+		attVals.add("LX_NaN");
+		atts.add(new Attribute("class", attVals));
+		for (int i = 0; i < numOfAttributes; i++) {
+			atts.add(new Attribute(String.valueOf(i)));
+		}
+		Instances instances = new Instances("", atts, 0);
+		instances.setClassIndex(0);
+		return instances;
 	}
 	
 	private SparseInstance sparseVectorToSparseInstance(SparseVector vec, int classID) {
@@ -48,82 +66,27 @@ public class SparseVectorSampleToWekaInstanceAdapter{
 		return new SparseInstance(1, val, idx, numOfAttributes + 1);
 	}
 	
-	public void addSample(Sample sample) {
-		String label = sample.getLabels().iterator().next().getText();
-		if (!labelMap.containsKey(label)) {
-			int n = labelMap.size();
-			labelMap.put(label, new Integer(n));
-		}
-		Instance instance = sparseVectorToSparseInstance((SparseVector) sample.getProperty(), labelMap.get(label));
-		instanceVec.add(instance);
+	public Instances getDataSet() {
+		return dataSet;
 	}
 	
-	public Instance convertSample (Sample sample) {
-		String label = sample.getLabels().iterator().next().getText();
-		Instance instance;
+	public Instance adaptSample(Sample sample, String label) {
+		int classID;
 		if (!labelMap.containsKey(label)) {
-			instance = sparseVectorToSparseInstance((SparseVector) sample.getProperty(), labelMap.size());
+			classID = labelMap.size();
 		} else {
-			instance = sparseVectorToSparseInstance((SparseVector) sample.getProperty(), labelMap.get(label));
+			classID = labelMap.get(label);
 		}
-		instance.setDataset(instances);
+		Instance instance = sparseVectorToSparseInstance((SparseVector) sample.getProperty(), classID);
+		instance.setDataset(dataSet);
 		return instance;
 	}
 	
-	public void addSample(Sample sample, Label pos) {
-		int classID;
-		if (sample.containLabel(pos)) {
-			classID = 1;
-		} else {
-			classID = 0;
-		}
-		labelMap.put(String.valueOf(classID), classID);
-		instanceVec.add(sparseVectorToSparseInstance((SparseVector) sample.getProperty(), classID));
+	public Instance adaptSample(Sample sample) {
+		return adaptSample(sample, "LX_NaN");
 	}
 	
-	public Instance convertSample (Sample sample, Label pos) {
-		int classID;
-		if (sample.containLabel(pos)) {
-			classID = 1;
-		} else {
-			classID = 0;
-		}
-		Instance instance;
-		if (!labelMap.containsKey(String.valueOf(classID))) {
-			instance = sparseVectorToSparseInstance((SparseVector) sample.getProperty(), labelMap.size());
-		} else {	
-			instance = sparseVectorToSparseInstance((SparseVector) sample.getProperty(), classID);
-		}
-		instance.setDataset(instances);
-		return instance;
-	}
-	
-	public Instances getInstances() {
-		ArrayList<Attribute> atts = new ArrayList<Attribute>();
-		
-		ArrayList<String> attVals = new ArrayList<String>(labelMap.keySet());
-		for (Entry<String, Integer> en:labelMap.entrySet()) {
-			attVals.set(en.getValue(), en.getKey());
-		}
-		attVals.add("Lx_others");
-
-		atts.add(new Attribute("class", attVals));
-		
-		for (int i = 0; i < numOfAttributes; i++) {
-			atts.add(new Attribute(String.valueOf(i)));
-		}
-		instances = new Instances("", atts, 0);
-		instances.setClassIndex(0);
-		
-		for (Instance instance:instanceVec) {
-			instance.setDataset(instances);
-			instances.add(instance);
-		}
-		
-		return instances;
-	}
-	
-	public int getNumOfClass() {
+	public int getNumOfClasses() {
 		return labelMap.size() + 1;
 	}
 }

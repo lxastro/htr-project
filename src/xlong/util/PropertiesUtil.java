@@ -24,7 +24,7 @@ public class PropertiesUtil {
 	private static final String[][] defaultPropertiesList = {
 		{"DBpedia_external_links.nt", "E:\\longx\\data\\external_links_en.nt"},
 		{"DBpedia_instance_types.nt", "E:\\longx\\data\\instance_types_en.nt"},
-		{"DBpedia_ontology.owl", "E:\\longx\\data\\dbpedia.owl"},
+		{"DBpedia_ontology.owl", "E:\\longx\\data\\dbpedia_2014.owl"},
 		{"mySpliter", " |-| "},
 		{"mySpliterReg", " \\|-\\| "},
 		};

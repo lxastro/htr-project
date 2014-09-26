@@ -14,12 +14,12 @@ public class SparseVector implements Property {
 	private int[] indexs;
 	/** */
 	private double[] values;
-	
+	private int totalLength;
 	/**
 	 * 
 	 * @param vector vector
 	 */
-	public SparseVector(final Map<Integer, Double> vector) {
+	public SparseVector(final Map<Integer, Double> vector, int totalLength) {
 		int size = vector.size();
 		indexs = new int[size];
 		values = new double[size];
@@ -29,6 +29,7 @@ public class SparseVector implements Property {
 			values[i] = en.getValue();
 			i++;
 		}
+		this.totalLength = totalLength;
 	}
 	
 	/**
@@ -36,13 +37,18 @@ public class SparseVector implements Property {
 	 */
 	public SparseVector(final String line) {
 		String[] parts = line.split(" ");
-		int size = parts.length / 2;
+		totalLength = Integer.parseInt(parts[0]);
+		int size = (parts.length - 1) / 2;
 		indexs = new int[size];
 		values = new double[size];
 		for (int i = 0; i < size; i++) {
-			indexs[i] = Integer.parseInt(parts[2 * i]);
-			values[i] = Double.parseDouble(parts[2 * i + 1]);
+			indexs[i] = Integer.parseInt(parts[2 * i + 1]);
+			values[i] = Double.parseDouble(parts[2 * i + 2]);
 		}
+	}
+	
+	public final int size() {
+		return totalLength;
 	}
 	
 	/**
@@ -70,8 +76,8 @@ public class SparseVector implements Property {
 	
 	@Override
 	public final String getOneLineString() {
-		String str = indexs[0] + " " + values[0];
-		for (int i = 1; i < indexs.length; i++) {
+		String str = "" + totalLength;
+		for (int i = 0; i < indexs.length; i++) {
 			str += " " + indexs[i] + " " + values[i];
 		}
 		return str;	

@@ -191,7 +191,7 @@ public class TextToSparseVectorConverter {
 	}
 	
 	public Sample convert(Sample textSample) {
-		SparseVector sv = new SparseVector(convert((((Text) textSample.getProperty()).getText())));
+		SparseVector sv = new SparseVector(convert((((Text) textSample.getProperty()).getText())), dictionary.size());
 		Set<Label> labels = textSample.getLabels(); 
 		return new Sample(sv, labels);
 	}
@@ -218,6 +218,7 @@ public class TextToSparseVectorConverter {
         oos.close();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static TextToSparseVectorConverter load(String filePath) throws Exception {
 		TextToSparseVectorConverter converter = new TextToSparseVectorConverter(null);
 		FileInputStream fis = new FileInputStream(filePath);
