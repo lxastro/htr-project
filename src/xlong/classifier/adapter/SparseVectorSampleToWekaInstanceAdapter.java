@@ -45,7 +45,6 @@ public class SparseVectorSampleToWekaInstanceAdapter{
 		for (Entry<String, Integer> en:labelMap.entrySet()) {
 			attVals.set(en.getValue(), en.getKey());
 		}
-		attVals.add("LX_NaN");
 		atts.add(new Attribute("class", attVals));
 		for (int i = 0; i < numOfAttributes; i++) {
 			atts.add(new Attribute(String.valueOf(i)));
@@ -55,7 +54,7 @@ public class SparseVectorSampleToWekaInstanceAdapter{
 		return instances;
 	}
 	
-	private SparseInstance sparseVectorToSparseInstance(SparseVector vec, int classID) {
+	private SparseInstance sparseVectorToSparseInstance(SparseVector vec, double classID) {
 		int len = vec.getIndexs().length;
 		int[] idx = new int[len + 1];
 		double[] val = new double[len + 1];
@@ -83,7 +82,9 @@ public class SparseVectorSampleToWekaInstanceAdapter{
 	}
 	
 	public Instance adaptSample(Sample sample) {
-		return adaptSample(sample, "LX_NaN");
+		Instance instance = sparseVectorToSparseInstance((SparseVector) sample.getProperty(), 0);
+		instance.setDataset(dataSet);
+		return instance;
 	}
 	
 	public int getNumOfClasses() {

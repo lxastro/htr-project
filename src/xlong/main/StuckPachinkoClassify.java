@@ -6,8 +6,8 @@ import java.util.Vector;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 
-import xlong.classifier.Classifier;
-import xlong.classifier.StuckPachinkoSingleLabelClassifier;
+import xlong.classifier.SingleLabelClassifier;
+import xlong.classifier.StuckPachinkoNBMClassifier;
 import xlong.data.IO.UrlMapIO;
 import xlong.evaluater.AccuracyEvaluater;
 import xlong.evaluater.Evaluater;
@@ -46,13 +46,15 @@ public class StuckPachinkoClassify {
 		
 		treeComposite = new Composite("result/treeAll", new Texts());
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(4);
+		//treeComposite.flatComposite(4);
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(3);
+		//treeComposite.flatComposite(3);
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(2);
+		//treeComposite.flatComposite(2);
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(1);
+		//treeComposite.flatComposite(1);
+		System.out.println(treeComposite.countSample());
+		treeComposite.inner2outer();
 		System.out.println(treeComposite.countSample());
 		System.out.println(treeComposite.getSamples().size());
 		System.out.println(treeComposite.getComposites().size());
@@ -68,11 +70,11 @@ public class StuckPachinkoClassify {
 		train = new Composite("result/trainText", new Texts());
 		test = new Composite("result/testText", new Texts());
 		
-		Classifier classifier = new StuckPachinkoSingleLabelClassifier(100000);
+		SingleLabelClassifier singleLabelClassifier = new StuckPachinkoNBMClassifier(100000);
 		System.out.println("train");
-		classifier.train(train);
+		singleLabelClassifier.train(train);
 		
-		Evaluater evaluater = new AccuracyEvaluater(classifier);
+		Evaluater evaluater = new AccuracyEvaluater(singleLabelClassifier);
 		System.out.println("test");
 		MyWriter.setFile("result/evaluate", false);
 		evaluater.evaluate(test);	

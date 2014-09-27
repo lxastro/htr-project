@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.Vector;
 
 import weka.classifiers.Classifier;
@@ -14,7 +15,7 @@ import xlong.sample.Sample;
 import xlong.sample.converter.TextToSparseVectorConverter;
 import xlong.sample.tokenizer.SingleWordTokenizer;
 
-public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
+public class StuckAllPathNBMClassifier extends AbstractSingleLabelClassifier  {
 	private int numOfFeatures;
 	private Map<String, weka.classifiers.Classifier> selecters;
 	private Map<String, weka.classifiers.Classifier> stuckers;
@@ -22,9 +23,10 @@ public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 	private Map<String, SparseVectorSampleToWekaInstanceAdapter> selectAdapters;
 	private Map<String, TextToSparseVectorConverter> stuckConverters;
 	private Map<String, SparseVectorSampleToWekaInstanceAdapter> stuckAdapters;
+	private Map<String, TreeSet<String>> sons;
 	private static final String CLASSIFIER_STRING = "weka.classifiers.bayes.NaiveBayesMultinomial";
 	
-	public StuckAllPathSingleLabelClassifier(int numOfFeatures) {
+	public StuckAllPathNBMClassifier(int numOfFeatures) {
 		this.numOfFeatures = numOfFeatures;
 		selecters = new TreeMap<String, weka.classifiers.Classifier>();
 		stuckers = new TreeMap<String, weka.classifiers.Classifier>();
@@ -32,6 +34,7 @@ public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 		selectAdapters = new TreeMap<String, SparseVectorSampleToWekaInstanceAdapter>();
 		stuckConverters = new TreeMap<String, TextToSparseVectorConverter>();
 		stuckAdapters = new TreeMap<String, SparseVectorSampleToWekaInstanceAdapter>();	
+		sons = new TreeMap<String, TreeSet<String>>();
 	}
 	
 	@Override
@@ -44,7 +47,7 @@ public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 	
 	private void train(String label, Composite composite) throws Exception {
 		if (composite.getComposites().size() == 0) {
-			selecters.put(label, null);
+			sons.put(label, null);
 			return;
 		}
 		System.out.println(label);
@@ -54,12 +57,12 @@ public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 			weka.classifiers.Classifier stucker = (Classifier) Class.forName(CLASSIFIER_STRING).newInstance();
 			
 			TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer(), numOfFeatures);
-			System.out.println("build stucker dictionary...");
+			//System.out.println("build stucker dictionary...");
 			converter.buildDictionary(composite);
-			System.out.println("determine stucker dictionary...");
+			//System.out.println("determine stucker dictionary...");
 			converter.determineDictionary();
-			System.out.println(converter.getDictionary().size());
-			System.out.println("convert stucker...");
+			//System.out.println(converter.getDictionary().size());
+			//System.out.println("convert stucker...");
 			Composite vecComposite = converter.convert(composite);
 			
 			int numOfAtts = converter.getDictionary().size();
@@ -74,7 +77,7 @@ public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 				addAll(instances, adapter, subcomp, "neg");
 			}
 			
-			System.out.println("train stucker...");
+			//System.out.println("train stucker...");
 			stucker.buildClassifier(instances);
 			
 			stuckers.put(label, stucker);
@@ -87,17 +90,21 @@ public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 		TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer(), numOfFeatures);
 		
 		Vector<String> labels = new Vector<String>();
-		System.out.println("build selecter dictionary...");
+		//System.out.println("build selecter dictionary...");
 		for (Composite subcomp:composite.getComposites()) {
 			labels.add(subcomp.getLabel().getText());
 			converter.buildDictionary(subcomp);
 		}
-		System.out.println(labels.size());
-		System.out.println("determine selecter dictionary...");
+		sons.put(label, new TreeSet<String>(labels));
+		if (labels.size() == 1) {
+			return;
+		}
+		//System.out.println(labels.size());
+		//System.out.println("determine selecter dictionary...");
 		converter.determineDictionary();
-		System.out.println(converter.getDictionary().size());
+		//System.out.println(converter.getDictionary().size());
 		
-		System.out.println("convert selecter...");
+		//System.out.println("convert selecter...");
 		int numOfAtts = converter.getDictionary().size();
 		SparseVectorSampleToWekaInstanceAdapter adapter = new SparseVectorSampleToWekaInstanceAdapter(numOfAtts, labels);
 		Instances instances = adapter.getDataSet();
@@ -105,7 +112,7 @@ public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 			addAll(instances, adapter, converter.convert(subcomp),subcomp.getLabel().getText());
 		}
 		
-		System.out.println("train selecter...");
+		//System.out.println("train selecter...");
 		selecter.buildClassifier(instances);
 		
 		selecters.put(label, selecter);
@@ -147,9 +154,9 @@ public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 	}
 	
 	private Pair test(String label, Sample sample) throws Exception {
-		weka.classifiers.Classifier selecter = selecters.get(label);
+		
 		PriorityQueue<Pair> pairs = new PriorityQueue<Pair>(new PairComp());
-		if (selecter == null) {
+		if (sons.get(label) == null) {
 			return new Pair(label, 1.0);
 		}
 		weka.classifiers.Classifier stucker = stuckers.get(label);
@@ -168,15 +175,21 @@ public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 				unstuckProb = probs[0];				
 			}
 		}
-		TextToSparseVectorConverter converter = selectConverters.get(label);
-		Sample vecSample = converter.convert(sample);
-		SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(label);
-		double[] probs = selecter.distributionForInstance(adapter.adaptSample(vecSample));
-		int n = probs.length - 1;
-		for (int i = 0; i < n; i++) {
-			String subLabel = adapter.getDataSet().classAttribute().value(i);
-			Pair subPair = test(subLabel, sample);
-			pairs.add(new Pair(subPair.label, unstuckProb * probs[i] * subPair.prob));
+		if (sons.get(label).size() == 1) {
+			Pair subPair = test(sons.get(label).first(), sample);
+			pairs.add(new Pair(subPair.label, unstuckProb * 1.0 * subPair.prob));
+		} else {
+			weka.classifiers.Classifier selecter = selecters.get(label);
+			TextToSparseVectorConverter converter = selectConverters.get(label);
+			Sample vecSample = converter.convert(sample);
+			SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(label);
+			double[] probs = selecter.distributionForInstance(adapter.adaptSample(vecSample));
+			int n = probs.length;
+			for (int i = 0; i < n; i++) {
+				String subLabel = adapter.getDataSet().classAttribute().value(i);
+				Pair subPair = test(subLabel, sample);
+				pairs.add(new Pair(subPair.label, unstuckProb * probs[i] * subPair.prob));
+			}
 		}
 		
 		return pairs.poll();		

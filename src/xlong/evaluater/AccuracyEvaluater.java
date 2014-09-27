@@ -1,6 +1,6 @@
 package xlong.evaluater;
 
-import xlong.classifier.Classifier;
+import xlong.classifier.SingleLabelClassifier;
 import xlong.sample.Composite;
 import xlong.sample.Sample;
 import xlong.util.MyWriter;
@@ -9,12 +9,12 @@ public class AccuracyEvaluater extends Evaluater {
 
 	private int correct;
 	
-	public AccuracyEvaluater(Classifier classifier) {
-		super(classifier);
+	public AccuracyEvaluater(SingleLabelClassifier singleLabelClassifier) {
+		super(singleLabelClassifier);
 	}
 
 	private void evaluate(Sample sample, String label) throws Exception {
-		String result = classifier.test(sample);
+		String result = singleLabelClassifier.test(sample);
 		
 		MyWriter.writeln(sample.getProperty().getOneLineString());
 		MyWriter.write(label + " ");

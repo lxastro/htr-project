@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import java.util.TreeSet;
 
 import xlong.classifier.SingleLabelClassifier;
-import xlong.classifier.StuckBeamSearchNBMClassifier;
+import xlong.classifier.StuckPachinkoSVMClassifier;
 import xlong.data.IO.UrlMapIO;
 import xlong.evaluater.AccuracyEvaluater;
 import xlong.evaluater.Evaluater;
@@ -20,7 +20,7 @@ import xlong.sample.Texts;
 import xlong.util.MyWriter;
 import xlong.util.PropertiesUtil;;
 
-public class StuckBeamSearchClassify {
+public class StuckPachinkoSVMTest {
 
 	public static void main(String[] args) throws Exception {
 		// ----------------------------Data process---------------------------------
@@ -46,20 +46,23 @@ public class StuckBeamSearchClassify {
 		
 		treeComposite = new Composite("result/treeAll", new Texts());
 		System.out.println(treeComposite.countSample());
-		//treeComposite.flatComposite(4);
+		//treeComposite.treeComposite(4);
 		System.out.println(treeComposite.countSample());
-		//treeComposite.flatComposite(3);
+		//treeComposite.treeComposite(3);
 		System.out.println(treeComposite.countSample());
-		//treeComposite.flatComposite(2);
+		//treeComposite.treeComposite(2);
 		System.out.println(treeComposite.countSample());
-		//treeComposite.flatComposite(1);
-		System.out.println(treeComposite.countSample());
-		treeComposite.inner2outer();
+		//treeComposite.treeComposite(1);
 		System.out.println(treeComposite.countSample());
 		System.out.println(treeComposite.getSamples().size());
 		System.out.println(treeComposite.getComposites().size());
+		Vector<Composite> composites = treeComposite.split(new int[] {1, 99}, new Random(123));
+		treeComposite = composites.firstElement();
+		System.out.println(treeComposite.countSample());
+		treeComposite.cutBranch(10);
+		System.out.println(treeComposite.countSample());
 		
-		Vector<Composite> composites = treeComposite.split(new int[] {70, 30}, new Random(123));
+		composites = treeComposite.split(new int[] {70, 30}, new Random(123));
 		train = composites.get(0);
 		System.out.println(train.countSample());
 		train.save("result/trainText");	
@@ -70,7 +73,7 @@ public class StuckBeamSearchClassify {
 		train = new Composite("result/trainText", new Texts());
 		test = new Composite("result/testText", new Texts());
 		
-		SingleLabelClassifier singleLabelClassifier = new StuckBeamSearchNBMClassifier(100000, 5);
+		SingleLabelClassifier singleLabelClassifier = new StuckPachinkoSVMClassifier(100000);
 		System.out.println("train");
 		singleLabelClassifier.train(train);
 		

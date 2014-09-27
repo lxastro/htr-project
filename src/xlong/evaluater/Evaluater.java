@@ -1,14 +1,14 @@
 package xlong.evaluater;
 
-import xlong.classifier.Classifier;
+import xlong.classifier.SingleLabelClassifier;
 import xlong.sample.Composite;
 
 public abstract class Evaluater {
-	Classifier classifier;
+	SingleLabelClassifier singleLabelClassifier;
     int total;
 	
-	public Evaluater(Classifier classifier) {
-		this.classifier = classifier;
+	public Evaluater(SingleLabelClassifier singleLabelClassifier) {
+		this.singleLabelClassifier = singleLabelClassifier;
 	}
 	
 	public abstract void evaluate(Composite composite) throws Exception;

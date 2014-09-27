@@ -291,14 +291,21 @@ public class Composite implements SampleComponent {
 		}		
 	}
 	
+	public final void inner2outer() {
+		if (samples.size() > 0) {
+			Composite outerComposite = new Composite(label.getText() + "_other");
+			outerComposite.samples.addAll(samples);
+			samples.clear();
+		}
+	}
+	
 	public final void cutBranch(int minSamples) {
 		Iterator<Composite> iterator = composites.iterator();
 		while (iterator.hasNext()) {
 			Composite composite = iterator.next();
+			composite.cutBranch(minSamples);
 			if (composite.countSample() < minSamples) {
 				iterator.remove();
-			} else {
-				composite.cutBranch(minSamples);
 			}
 		}
 	}

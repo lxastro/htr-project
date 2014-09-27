@@ -6,8 +6,8 @@ import java.util.Vector;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 
-import xlong.classifier.Classifier;
-import xlong.classifier.StuckAllPathSingleLabelClassifier;
+import xlong.classifier.SingleLabelClassifier;
+import xlong.classifier.StuckAllPathNBMClassifier;
 import xlong.data.IO.UrlMapIO;
 import xlong.evaluater.AccuracyEvaluater;
 import xlong.evaluater.Evaluater;
@@ -54,6 +54,8 @@ public class StuckAllPathClassify {
 		System.out.println(treeComposite.countSample());
 		//treeComposite.flatComposite(1);
 		System.out.println(treeComposite.countSample());
+		treeComposite.inner2outer();
+		System.out.println(treeComposite.countSample());
 		System.out.println(treeComposite.getSamples().size());
 		System.out.println(treeComposite.getComposites().size());
 		
@@ -68,11 +70,11 @@ public class StuckAllPathClassify {
 		train = new Composite("result/trainText", new Texts());
 		test = new Composite("result/testText", new Texts());
 		
-		Classifier classifier = new StuckAllPathSingleLabelClassifier(100000);
+		SingleLabelClassifier singleLabelClassifier = new StuckAllPathNBMClassifier(100000);
 		System.out.println("train");
-		classifier.train(train);
+		singleLabelClassifier.train(train);
 		
-		Evaluater evaluater = new AccuracyEvaluater(classifier);
+		Evaluater evaluater = new AccuracyEvaluater(singleLabelClassifier);
 		System.out.println("test");
 		MyWriter.setFile("result/evaluate", false);
 		evaluater.evaluate(test);	
