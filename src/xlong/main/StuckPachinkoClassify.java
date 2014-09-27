@@ -29,26 +29,26 @@ public class StuckPachinkoClassify {
 		PropertiesUtil.loadProperties();
 		Composite treeComposite, train, test;
 		
-//		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
-//		OntologyTree tree = OntologyTree.getTree(ontologyFile);
-//		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
-//		System.out.println(urlMap.size());
-//	
-//		treeComposite = new Composite(tree);
-//		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
-//			String label = en.getValue().first();
-//			Sample sample = new Sample(new Text(en.getKey()), Labels.getLabels(tree.getPath(label)));
-//			treeComposite.addSample(sample);
-//		}
-//		System.out.println(treeComposite.countSample());
-//		treeComposite.cutBranch(1);
-//		treeComposite.save("result/treeAll");	
+		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
+		OntologyTree tree = OntologyTree.getTree(ontologyFile);
+		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
+		System.out.println(urlMap.size());
+	
+		treeComposite = new Composite(tree);
+		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
+			String label = en.getValue().first();
+			Sample sample = new Sample(new Text(en.getKey()), Labels.getLabels(tree.getPath(label)));
+			treeComposite.addSample(sample);
+		}
+		System.out.println(treeComposite.countSample());
+		treeComposite.cutBranch(1);
+		treeComposite.save("result/treeAll");	
 		
 		treeComposite = new Composite("result/treeAll", new Texts());
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(4);
+		//treeComposite.flatComposite(4);
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(3);
+		//treeComposite.flatComposite(3);
 		System.out.println(treeComposite.countSample());
 		//treeComposite.flatComposite(2);
 		System.out.println(treeComposite.countSample());
@@ -68,7 +68,7 @@ public class StuckPachinkoClassify {
 		train = new Composite("result/trainText", new Texts());
 		test = new Composite("result/testText", new Texts());
 		
-		Classifier classifier = new StuckPachinkoSingleLabelClassifier(10000);
+		Classifier classifier = new StuckPachinkoSingleLabelClassifier(100000);
 		System.out.println("train");
 		classifier.train(train);
 		

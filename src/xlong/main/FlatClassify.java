@@ -17,6 +17,7 @@ import xlong.sample.Sample;
 import xlong.sample.Labels;
 import xlong.sample.Text;
 import xlong.sample.Texts;
+import xlong.util.MyWriter;
 import xlong.util.PropertiesUtil;
 
 public class FlatClassify {
@@ -63,7 +64,9 @@ public class FlatClassify {
 		
 		Evaluater evaluater = new AccuracyEvaluater(classifier);
 		System.out.println("test");
+		MyWriter.setFile("result/evaluate", false);
 		evaluater.evaluate(test);	
+		MyWriter.close();
 		System.out.println(evaluater.getAccuracy());
 	}
 }
