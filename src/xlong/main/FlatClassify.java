@@ -47,7 +47,7 @@ public class FlatClassify {
 		System.out.println(flatComposite.countSample());
 		System.out.println(flatComposite.getComposites().size());
 		
-		Vector<Composite> composites = flatComposite.split(new int[] {70, 30}, new Random());
+		Vector<Composite> composites = flatComposite.split(new int[] {70, 30}, new Random(123));
 		train = composites.get(0);
 		System.out.println(train.countSample());
 		train.save("result/trainText");	

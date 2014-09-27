@@ -1,6 +1,8 @@
 package xlong.classifier;
 
+import java.util.Comparator;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.TreeMap;
 import java.util.Vector;
 
@@ -12,7 +14,7 @@ import xlong.sample.Sample;
 import xlong.sample.converter.TextToSparseVectorConverter;
 import xlong.sample.tokenizer.SingleWordTokenizer;
 
-public class StuckPachinkoSingleLabelClassifier extends AbstractClassifier  {
+public class StuckAllPathSingleLabelClassifier extends AbstractClassifier  {
 	private int numOfFeatures;
 	private Map<String, weka.classifiers.Classifier> selecters;
 	private Map<String, weka.classifiers.Classifier> stuckers;
@@ -21,8 +23,8 @@ public class StuckPachinkoSingleLabelClassifier extends AbstractClassifier  {
 	private Map<String, TextToSparseVectorConverter> stuckConverters;
 	private Map<String, SparseVectorSampleToWekaInstanceAdapter> stuckAdapters;
 	private static final String CLASSIFIER_STRING = "weka.classifiers.bayes.NaiveBayesMultinomial";
-
-	public StuckPachinkoSingleLabelClassifier(int numOfFeatures) {
+	
+	public StuckAllPathSingleLabelClassifier(int numOfFeatures) {
 		this.numOfFeatures = numOfFeatures;
 		selecters = new TreeMap<String, weka.classifiers.Classifier>();
 		stuckers = new TreeMap<String, weka.classifiers.Classifier>();
@@ -122,32 +124,62 @@ public class StuckPachinkoSingleLabelClassifier extends AbstractClassifier  {
 	
 	@Override
 	public String test(Sample sample) throws Exception {
-		return test("root", sample);
+		return test("root", sample).label;
 	}
 	
-	private String test(String label, Sample sample) throws Exception {
+	class Pair{
+		String label;
+		double prob;
+		public Pair(String label, double prob) {
+			this.label = label;
+			this.prob = prob;
+		}
+	}
+	
+	class PairComp implements Comparator<Pair> {
+
+		@Override
+		public int compare(Pair o1, Pair o2) {
+			// TODO Auto-generated method stub
+			return -(int)Math.signum(o1.prob-o2.prob);
+		}
+		
+	}
+	
+	private Pair test(String label, Sample sample) throws Exception {
 		weka.classifiers.Classifier selecter = selecters.get(label);
+		PriorityQueue<Pair> pairs = new PriorityQueue<Pair>(new PairComp());
 		if (selecter == null) {
-			return label;
+			return new Pair(label, 1.0);
 		}
 		weka.classifiers.Classifier stucker = stuckers.get(label);
+		double unstuckProb = 1.0;
 		if (stucker != null) {
 			TextToSparseVectorConverter converter = stuckConverters.get(label);
 			Sample vecSample = converter.convert(sample);
 			SparseVectorSampleToWekaInstanceAdapter adapter = stuckAdapters.get(label);
-			int classID = (int)(stucker.classifyInstance(adapter.adaptSample(vecSample)) + 0.5);
-			String str = adapter.getDataSet().classAttribute().value(classID);
+			double[] probs = stucker.distributionForInstance(adapter.adaptSample(vecSample));
+			String str = adapter.getDataSet().classAttribute().value(0);
 			if (str.equals("pos")) {
-				return label;
+				pairs.add(new Pair(label, probs[0]));
+				unstuckProb = probs[1];
+			} else {
+				pairs.add(new Pair(label, probs[1]));
+				unstuckProb = probs[0];				
 			}
 		}
 		TextToSparseVectorConverter converter = selectConverters.get(label);
 		Sample vecSample = converter.convert(sample);
 		SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(label);
-		int classID = (int)(selecter.classifyInstance(adapter.adaptSample(vecSample)) + 0.5);
-		String subLabel = adapter.getDataSet().classAttribute().value(classID);
-		//System.out.println(str);
-		return test(subLabel, sample);
+		double[] probs = selecter.distributionForInstance(adapter.adaptSample(vecSample));
+		int n = probs.length - 1;
+		for (int i = 0; i < n; i++) {
+			String subLabel = adapter.getDataSet().classAttribute().value(i);
+			Pair subPair = test(subLabel, sample);
+			pairs.add(new Pair(subPair.label, unstuckProb * probs[i] * subPair.prob));
+		}
+		
+		return pairs.poll();		
 	}
-
+	
 }

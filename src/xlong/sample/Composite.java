@@ -278,12 +278,24 @@ public class Composite implements SampleComponent {
 		return parts;
 	}
 	
-	public final void cutBranch(int minSamples) {
+	public final void riseBranch(int minSamples) {
 		Iterator<Composite> iterator = composites.iterator();
 		while (iterator.hasNext()) {
 			Composite composite = iterator.next();
 			if (composite.countSample() < minSamples) {
 				samples.addAll(composite.getAllSamples());
+				iterator.remove();
+			} else {
+				composite.cutBranch(minSamples);
+			}
+		}		
+	}
+	
+	public final void cutBranch(int minSamples) {
+		Iterator<Composite> iterator = composites.iterator();
+		while (iterator.hasNext()) {
+			Composite composite = iterator.next();
+			if (composite.countSample() < minSamples) {
 				iterator.remove();
 			} else {
 				composite.cutBranch(minSamples);

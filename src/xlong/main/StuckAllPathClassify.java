@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 import java.util.TreeSet;
 
 import xlong.classifier.Classifier;
-import xlong.classifier.StuckPachinkoSingleLabelClassifier;
+import xlong.classifier.StuckAllPathSingleLabelClassifier;
 import xlong.data.IO.UrlMapIO;
 import xlong.evaluater.AccuracyEvaluater;
 import xlong.evaluater.Evaluater;
@@ -20,7 +20,7 @@ import xlong.sample.Texts;
 import xlong.util.MyWriter;
 import xlong.util.PropertiesUtil;;
 
-public class StuckPachinkoClassify {
+public class StuckAllPathClassify {
 
 	public static void main(String[] args) throws Exception {
 		// ----------------------------Data process---------------------------------
@@ -46,13 +46,13 @@ public class StuckPachinkoClassify {
 		
 		treeComposite = new Composite("result/treeAll", new Texts());
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(4);
+		//treeComposite.flatComposite(4);
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(3);
+		//treeComposite.flatComposite(3);
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(2);
+		//treeComposite.flatComposite(2);
 		System.out.println(treeComposite.countSample());
-		treeComposite.flatComposite(1);
+		//treeComposite.flatComposite(1);
 		System.out.println(treeComposite.countSample());
 		System.out.println(treeComposite.getSamples().size());
 		System.out.println(treeComposite.getComposites().size());
@@ -68,7 +68,7 @@ public class StuckPachinkoClassify {
 		train = new Composite("result/trainText", new Texts());
 		test = new Composite("result/testText", new Texts());
 		
-		Classifier classifier = new StuckPachinkoSingleLabelClassifier(100000);
+		Classifier classifier = new StuckAllPathSingleLabelClassifier(100000);
 		System.out.println("train");
 		classifier.train(train);
 		
