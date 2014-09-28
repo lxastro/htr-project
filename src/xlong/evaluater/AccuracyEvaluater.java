@@ -3,7 +3,6 @@ package xlong.evaluater;
 import xlong.classifier.SingleLabelClassifier;
 import xlong.sample.Composite;
 import xlong.sample.Sample;
-import xlong.util.MyWriter;
 
 public class AccuracyEvaluater extends Evaluater {
 
@@ -16,9 +15,9 @@ public class AccuracyEvaluater extends Evaluater {
 	private void evaluate(Sample sample, String label) throws Exception {
 		String result = singleLabelClassifier.test(sample);
 		
-		MyWriter.writeln(sample.getProperty().getOneLineString());
-		MyWriter.write(label + " ");
-		MyWriter.writeln(result);
+//		MyWriter.writeln(sample.getProperty().getOneLineString());
+//		MyWriter.write(label + " ");
+//		MyWriter.writeln(result);
 		
 		if (result.equals(label)) {
 			correct += 1;

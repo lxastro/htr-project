@@ -21,8 +21,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 	private Map<String, TextToSparseVectorConverter> stuckConverters;
 	private Map<String, SparseVectorSampleToWekaInstanceAdapter> stuckAdapters;
 	private Map<String, TreeSet<String>> sons;
-	private static final String OPTION = "-M";
-			;
+	//private static final String OPTION = "-M";
 
 	public StuckPachinkoSVMClassifier(int numOfFeatures) {
 		this.numOfFeatures = numOfFeatures;

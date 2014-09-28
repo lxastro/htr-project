@@ -29,20 +29,20 @@ public class StuckPachinkoSVMTest {
 		PropertiesUtil.loadProperties();
 		Composite treeComposite, train, test;
 		
-//		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
-//		OntologyTree tree = OntologyTree.getTree(ontologyFile);
-//		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
-//		System.out.println(urlMap.size());
-//	
-//		treeComposite = new Composite(tree);
-//		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
-//			String label = en.getValue().first();
-//			Sample sample = new Sample(new Text(en.getKey()), Labels.getLabels(tree.getPath(label)));
-//			treeComposite.addSample(sample);
-//		}
-//		System.out.println(treeComposite.countSample());
-//		treeComposite.cutBranch(1);
-//		treeComposite.save("result/treeAll");	
+		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
+		OntologyTree tree = OntologyTree.getTree(ontologyFile);
+		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
+		System.out.println(urlMap.size());
+	
+		treeComposite = new Composite(tree);
+		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
+			String label = en.getValue().first();
+			Sample sample = new Sample(new Text(en.getKey()), Labels.getLabels(tree.getPath(label)));
+			treeComposite.addSample(sample);
+		}
+		System.out.println(treeComposite.countSample());
+		treeComposite.cutBranch(1);
+		treeComposite.save("result/treeAll");	
 		
 		treeComposite = new Composite("result/treeAll", new Texts());
 		System.out.println(treeComposite.countSample());
