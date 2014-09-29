@@ -3,11 +3,14 @@
  */
 package xlong.sample.converter;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -16,14 +19,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.HashMap;
 
+import xlong.data.tokenizer.Tokenizer;
 import xlong.sample.Composite;
 import xlong.sample.Label;
 import xlong.sample.Sample;
 import xlong.sample.SparseVector;
 import xlong.sample.Text;
-import xlong.sample.tokenizer.Tokenizer;
 
 /**
  * Class to convert string to word vectore
@@ -33,18 +36,29 @@ import xlong.sample.tokenizer.Tokenizer;
 public class TextToSparseVectorConverter {
 	
 	private Tokenizer tokenizer;
-	private HashSet<String> stopwords;
+	private static HashSet<String> stopwords = new HashSet<String>();
 	private boolean s_lowerCaseTokens = true;
+	private int s_filterShortWords = 0;
+	private double s_ignoreSmallFeature = 0;
 	private boolean s_useStoplist = false;
     private boolean s_OutputCounts = false;
-	private int s_wordsToKeep = 100000000;
-	private static final int MAXWORDSTOKEEP = 100000000;
+    private boolean s_TF = false;
+    private boolean s_IDF = false;
+    private boolean s_detemineByDocFreq = false;
+	private int s_wordsToKeep;
 	private int s_minTermFreq = 1;
+	
+	private static final int MAXWORDSTOKEEP = 100000000;
+	
+	private HashMap<String, Integer> dictionary;
+	private HashMap<String, Count> wordCount;
+	private HashMap<String, Count> docCount;
+	private int[] docFreq;
+	private int totalNumber;
 
-	private TreeMap<String, Integer> dictionary;
-	private TreeMap<String, Count> wordMap;
-
-	private class Count {
+	private class Count implements Serializable {
+		private static final long serialVersionUID = -8640817304015954550L;
+		
 		int count = 0;
 
 		public Count(int x) {
@@ -56,14 +70,57 @@ public class TextToSparseVectorConverter {
 		}
 	}
 	
-	public TextToSparseVectorConverter(Tokenizer tokenizer, int wordsToKeep) {
-		this.wordMap = new TreeMap<String, Count>();
+	public TextToSparseVectorConverter(Tokenizer tokenizer) {
+		this.wordCount = new HashMap<String, Count>();
+		this.docCount = new HashMap<String, Count>();
 		this.tokenizer = tokenizer;
-		s_wordsToKeep = wordsToKeep;
+		this.totalNumber = 0;
+		s_wordsToKeep = MAXWORDSTOKEEP;
 	}
 	
-	public TextToSparseVectorConverter(Tokenizer tokenizer) {
-		this(tokenizer, MAXWORDSTOKEEP);
+	public TextToSparseVectorConverter enableStopwords() {
+		s_useStoplist = true;
+		return this;
+	}
+	public TextToSparseVectorConverter enableTF() {
+		s_TF = true;
+		return this;
+	}
+	public TextToSparseVectorConverter enableIDF() {
+		s_IDF = true;
+		return this;
+	}
+	public TextToSparseVectorConverter enableDetemineByDocFreq() {
+		s_detemineByDocFreq = true;
+		return this;
+	}
+	public TextToSparseVectorConverter setFilterShortWords(int filterMaxLength) {
+		s_filterShortWords = filterMaxLength;
+		return this;
+	}
+	public TextToSparseVectorConverter setIgnoreSmallFeatures(double ignoreMaxValue) {
+		s_ignoreSmallFeature = ignoreMaxValue;
+		return this;
+	}
+	public TextToSparseVectorConverter setMinTermFreq(int minTermFreq) {
+		s_minTermFreq = minTermFreq;
+		return this;
+	}
+	public TextToSparseVectorConverter enableOutputCount() {
+		s_OutputCounts = true;
+		return this;
+	}
+	public TextToSparseVectorConverter setWordToKeep(int wordToKeep) {
+		s_wordsToKeep = wordToKeep;
+		return this;
+	}
+	public static void addStopwords(String stopWordsFile) throws IOException {
+		BufferedReader in = new BufferedReader(new FileReader(stopWordsFile));
+		String word;
+		while((word = in.readLine()) != null) {
+			stopwords.add(word.toLowerCase());
+		}
+		in.close();
 	}
 
 	private static void sortArray(int[] array) {
@@ -88,8 +145,14 @@ public class TextToSparseVectorConverter {
 
 	public void determineDictionary() {
 		// Figure out the minimum required word frequency
-		int array[] = new int[wordMap.size()];
-		Iterator<Count> it = wordMap.values().iterator();
+		Map<String, Count> xCount;
+		if (s_detemineByDocFreq == true) {
+			xCount = docCount;
+		} else {
+			xCount = wordCount;
+		}
+		int array[] = new int[xCount.size()];
+		Iterator<Count> it =xCount.values().iterator();
 		int pos = 0;
 		int prune;
 		while (it.hasNext()) {
@@ -104,13 +167,12 @@ public class TextToSparseVectorConverter {
 			prune = s_minTermFreq;
 		} else {
 			// otherwise set it to be at least minFreq
-			prune = Math
-					.max(s_minTermFreq, array[array.length - s_wordsToKeep]);
+			prune = Math.max(s_minTermFreq, array[array.length - s_wordsToKeep]);
 		}
 
 		// Add the word vector attributes
-		TreeMap<String, Integer> newDictionary = new TreeMap<String, Integer>();
-		Iterator<Entry<String, Count>> ite = wordMap.entrySet().iterator();
+		HashMap<String, Integer> newDictionary = new HashMap<String, Integer>();
+		Iterator<Entry<String, Count>> ite = xCount.entrySet().iterator();
 		
 		int index = 0;
 		while (ite.hasNext()) {
@@ -124,13 +186,21 @@ public class TextToSparseVectorConverter {
 			}
 		}
 		dictionary = newDictionary;
+		docFreq = new int[dictionary.size()];
+		for (Entry<String, Integer> en:dictionary.entrySet()) {
+			docFreq[en.getValue().intValue()] = docCount.get(en.getKey()).count;
+		}
 		
 		// Release memory
-		wordMap = null;
+		wordCount = null;
+		docCount = null;
 	}
 
-	public void buildDictionary(String text) {
+	public void buildDictionary(String text) {	
+		
 		List<String> words = tokenizer.tokenize(text);
+	
+		HashSet<String> wordsSet = new HashSet<String>();
 		
 		for (String word : words) {
 			if (this.s_lowerCaseTokens == true) {
@@ -141,16 +211,31 @@ public class TextToSparseVectorConverter {
 					continue;
 				}
 			}
-			if (!(wordMap.containsKey(word))) {
-				wordMap.put(word, new Count(1));
+			if (word.length() <= s_filterShortWords) {
+				continue;
+			}
+			if (!(wordCount.containsKey(word))) {
+				wordCount.put(word, new Count(1));
 			} else {
-				wordMap.get(word).addOne();
+				wordCount.get(word).addOne();
+			}
+			wordsSet.add(word);
+		}
+		
+		for (String word : wordsSet) {
+			if (!docCount.containsKey(word)) {
+				docCount.put(word, new Count(1));
+			} else {
+				docCount.get(word).addOne();
 			}
 		}
+		
+		totalNumber++;
+		
 	}
 	
 	public Map<Integer, Double> convert(String text){
-		TreeMap<Integer, Double> vector = new TreeMap<Integer, Double>();
+		HashMap<Integer, Double> vector = new HashMap<Integer, Double>();
 		List<String> words = tokenizer.tokenize(text);
 		for (String word : words) {
 			if (this.s_lowerCaseTokens == true) {
@@ -170,7 +255,35 @@ public class TextToSparseVectorConverter {
 				}
 			}
 		}
-		return vector;
+		
+	    if (s_TF == true) {
+	    	Iterator<Integer> it = vector.keySet().iterator();
+	        while (it.hasNext()) {
+	        	Integer index = it.next();
+	            double val = vector.get(index).doubleValue();
+	            val = Math.log(val + 1);
+	            vector.put(index, new Double(val));
+	        }
+	    }
+	    
+	    if (s_IDF == true) {
+	        Iterator<Integer> it = vector.keySet().iterator();
+	        while(it.hasNext()) {
+	        	Integer index = it.next();
+	            double val = vector.get(index).doubleValue();
+	            val = val * Math.log(totalNumber / (double) docFreq[index.intValue()]);
+	            vector.put(index, new Double(val));
+	        }
+	    }
+	    
+	    HashMap<Integer, Double> newVector = new HashMap<Integer, Double>();
+	    for (Entry<Integer, Double> en:vector.entrySet()){
+	    	if (en.getValue() > s_ignoreSmallFeature) {
+	    		newVector.put(en.getKey() + 1, en.getValue());
+	    	}
+	    }
+	    
+		return newVector;
 	}
 	
 	public Collection<Map<Integer, Double>> convert(Collection<String> texts) {
@@ -207,13 +320,20 @@ public class TextToSparseVectorConverter {
 		return vectorComposite;
 	}
 	
-	public TreeMap<String, Integer> getDictionary() {
-		return dictionary;
+	public int dictionarySize() {
+		return dictionary.size();
 	}
 	
 	public void save(String filePath) throws IOException {
 		FileOutputStream fos = new FileOutputStream(filePath);
         ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(s_ignoreSmallFeature);
+        oos.writeObject(s_lowerCaseTokens);
+        oos.writeObject(s_OutputCounts);
+        oos.writeObject(s_TF);
+        oos.writeObject(s_IDF);
+        oos.writeObject(totalNumber);
+        oos.writeObject(docFreq);
         oos.writeObject(dictionary);
         oos.close();
 	}
@@ -223,7 +343,14 @@ public class TextToSparseVectorConverter {
 		TextToSparseVectorConverter converter = new TextToSparseVectorConverter(null);
 		FileInputStream fis = new FileInputStream(filePath);
 		ObjectInputStream ois = new ObjectInputStream(fis);
-		converter.dictionary = (TreeMap<String, Integer>) ois.readObject();
+		converter.s_ignoreSmallFeature = (double) ois.readObject();
+		converter.s_lowerCaseTokens = (boolean) ois.readObject();
+		converter.s_OutputCounts = (boolean) ois.readObject();
+		converter.s_TF = (boolean) ois.readObject();
+		converter.s_IDF = (boolean) ois.readObject();
+		converter.totalNumber = (int) ois.readObject();
+		converter.docFreq = (int[]) ois.readObject();
+		converter.dictionary = (HashMap<String, Integer>) ois.readObject();
 		ois.close();
 		return converter;
 	}

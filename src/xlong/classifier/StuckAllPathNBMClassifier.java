@@ -9,9 +9,7 @@ import xlong.sample.converter.TextToSparseVectorConverter;
 
 public class StuckAllPathNBMClassifier extends StuckTopDownNBMClassifier {
 	
-	public StuckAllPathNBMClassifier(int numOfFeatures, int stemmingMode) {
-		super(numOfFeatures, stemmingMode);
-		this.numOfFeatures = numOfFeatures;
+	public StuckAllPathNBMClassifier() {
 		selecters = new TreeMap<String, weka.classifiers.Classifier>();
 		stuckers = new TreeMap<String, weka.classifiers.Classifier>();
 		selectConverters = new TreeMap<String, TextToSparseVectorConverter>();

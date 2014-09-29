@@ -8,9 +8,7 @@ import xlong.sample.converter.TextToSparseVectorConverter;
 
 public class StuckPachinkoNBMClassifier extends StuckTopDownNBMClassifier  {
 	
-	public StuckPachinkoNBMClassifier(int numOfFeatures, int stemmingMode) {
-		super(numOfFeatures, stemmingMode);
-		this.numOfFeatures = numOfFeatures;
+	public StuckPachinkoNBMClassifier() {
 		selecters = new TreeMap<String, weka.classifiers.Classifier>();
 		stuckers = new TreeMap<String, weka.classifiers.Classifier>();
 		selectConverters = new TreeMap<String, TextToSparseVectorConverter>();

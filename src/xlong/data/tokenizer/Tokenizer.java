@@ -1,4 +1,4 @@
-package xlong.sample.tokenizer;
+package xlong.data.tokenizer;
 
 import java.util.List;
 

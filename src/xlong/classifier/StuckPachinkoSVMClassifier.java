@@ -7,10 +7,10 @@ import java.util.Vector;
 
 import weka.core.Instances;
 import xlong.classifier.adapter.SparseVectorSampleToWekaInstanceAdapter;
+import xlong.data.tokenizer.SingleWordTokenizer;
 import xlong.sample.Composite;
 import xlong.sample.Sample;
 import xlong.sample.converter.TextToSparseVectorConverter;
-import xlong.sample.tokenizer.SingleWordTokenizer;
 
 public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 	private int numOfFeatures;
@@ -23,8 +23,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 	private Map<String, TreeSet<String>> sons;
 	//private static final String OPTION = "-M";
 
-	public StuckPachinkoSVMClassifier(int numOfFeatures) {
-		this.numOfFeatures = numOfFeatures;
+	public StuckPachinkoSVMClassifier() {
 		selecters = new TreeMap<String,  weka.classifiers.Classifier>();
 		stuckers = new TreeMap<String,  weka.classifiers.Classifier>();
 		selectConverters = new TreeMap<String, TextToSparseVectorConverter>();
@@ -53,7 +52,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		} else {
 			weka.classifiers.Classifier stucker = newClassifier();
 			
-			TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer(), numOfFeatures);
+			TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer());
 			//System.out.println("build stucker dictionary...");
 			converter.buildDictionary(composite);
 			//System.out.println("determine stucker dictionary...");
@@ -62,7 +61,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 			//System.out.println("convert stucker...");
 			Composite vecComposite = converter.convert(composite);
 			
-			int numOfAtts = converter.getDictionary().size();
+			int numOfAtts = converter.dictionarySize();
 			Vector<String> tags = new Vector<String>();
 			tags.add("neg"); tags.add("pos");
 			SparseVectorSampleToWekaInstanceAdapter adapter = new SparseVectorSampleToWekaInstanceAdapter(numOfAtts, tags);
@@ -88,7 +87,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 			
 			weka.classifiers.Classifier selecter = newClassifier();
 			
-			TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer(), numOfFeatures);
+			TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer());
 			
 			Vector<String> tags = new Vector<String>();
 			tags.add("neg"); tags.add("pos");
@@ -102,7 +101,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 			//System.out.println(converter.getDictionary().size());
 			
 			//System.out.println("convert selecter...");
-			int numOfAtts = converter.getDictionary().size();
+			int numOfAtts = converter.dictionarySize();
 			SparseVectorSampleToWekaInstanceAdapter adapter = new SparseVectorSampleToWekaInstanceAdapter(numOfAtts, tags);
 			Instances instances = adapter.getDataSet();
 			for (Composite subcompOther:composite.getComposites()) {

@@ -10,9 +10,7 @@ import xlong.sample.converter.TextToSparseVectorConverter;
 public class StuckBeamSearchNBMClassifier extends StuckTopDownNBMClassifier  {
 	private int beamWidth;
 	
-	public StuckBeamSearchNBMClassifier(int numOfFeatures, int stemmingMode, int beamWidth) {
-		super(numOfFeatures, stemmingMode);
-		this.numOfFeatures = numOfFeatures;
+	public StuckBeamSearchNBMClassifier(int beamWidth) {
 		this.beamWidth = beamWidth;
 		selecters = new TreeMap<String, weka.classifiers.Classifier>();
 		stuckers = new TreeMap<String, weka.classifiers.Classifier>();

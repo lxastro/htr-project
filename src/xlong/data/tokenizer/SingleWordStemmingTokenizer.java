@@ -1,4 +1,4 @@
-package xlong.sample.tokenizer;
+package xlong.data.tokenizer;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -6,7 +6,6 @@ import java.util.List;
 import weka.core.stemmers.Stemmer;
 
 public class SingleWordStemmingTokenizer extends Tokenizer {
-
 	private static final String DELIMITERSREG = "[0-9_\\W]";
 	private static Stemmer stemmer =  new weka.core.stemmers.NullStemmer();;
 	private static int mode = 0;
@@ -57,18 +56,17 @@ public class SingleWordStemmingTokenizer extends Tokenizer {
 
 	public static void main(String[] args) {
 		String testString = "This is the test string. Test single word stemmer tokenizers. And a URL: http://www.nfl.com/teams/greenbaypackers/profile?team=GB";
-		for (String word : new SingleWordStemmingTokenizer(0).tokenize(new String(testString))) {
+		for (String word : new SingleWordSegmentStemmingTokenizer(0).tokenize(new String(testString))) {
 			System.out.print(word + " ");
 		}
 		System.out.println();
-		for (String word : new SingleWordStemmingTokenizer(1).tokenize(new String(testString))) {
+		for (String word : new SingleWordSegmentStemmingTokenizer(1).tokenize(new String(testString))) {
 			System.out.print(word + " ");
 		}
 		System.out.println();
-		for (String word : new SingleWordStemmingTokenizer(2).tokenize(new String(testString))) {
+		for (String word : new SingleWordSegmentStemmingTokenizer(2).tokenize(new String(testString))) {
 			System.out.print(word + " ");
 		}
 		System.out.println();
 	}
-
 }

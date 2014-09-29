@@ -63,7 +63,7 @@ public class FlatSVMTest {
 		train = new Composite("result/trainText", new Texts());
 		test = new Composite("result/testText", new Texts());
 		
-		SingleLabelClassifier singleLabelClassifier = new StuckPachinkoSVMClassifier(100000);
+		SingleLabelClassifier singleLabelClassifier = new StuckPachinkoSVMClassifier();
 		System.out.println("train");
 		singleLabelClassifier.train(train);
 		

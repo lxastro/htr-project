@@ -11,6 +11,10 @@ import xlong.classifier.StuckAllPathNBMClassifier;
 import xlong.classifier.StuckBeamSearchNBMClassifier;
 import xlong.classifier.StuckPachinkoNBMClassifier;
 import xlong.data.IO.UrlMapIO;
+import xlong.data.parser.BigramSegmentParser;
+import xlong.data.parser.Parser;
+import xlong.data.parser.TokenizeParser;
+import xlong.data.tokenizer.SingleWordTokenizer;
 import xlong.evaluater.AccuracyEvaluater;
 import xlong.evaluater.Evaluater;
 import xlong.ontology.OntologyTree;
@@ -19,6 +23,7 @@ import xlong.sample.Sample;
 import xlong.sample.Labels;
 import xlong.sample.Text;
 import xlong.sample.Texts;
+import xlong.sample.converter.TextToSparseVectorConverter;
 import xlong.util.PropertiesUtil;
 import xlong.util.RunningTime;
 
@@ -29,44 +34,57 @@ public class StuckTopDownNBMTest {
 		// Get properties.
 		PropertiesUtil.init();
 		PropertiesUtil.loadProperties();
+		String[] stopWordsFiles = new String[] {
+			"E:/longx/data/stop-words/stop-words_english_1_en.txt",
+			"E:/longx/data/stop-words/stop-words_english_2_en.txt",
+			"E:/longx/data/stop-words/stop-words_english_3_en.txt",
+			"E:/longx/data/stop-words/stop-words_english_4_google_en.txt",
+			"E:/longx/data/stop-words/stop-words_english_5_en.txt",
+			"E:/longx/data/stop-words/stop-words_english_6_en.txt",
+			"E:/longx/data/lxdata/stopwords1.txt",
+			"E:/longx/data/lxdata/stopwords2.txt",
+			"E:/longx/data/lxdata/stopwordsMySQL.txt",
+			"E:/longx/data/lxdata/stopwordsUrl.txt",
+		};
+		for (String stopWordsFile:stopWordsFiles) {
+			TextToSparseVectorConverter.addStopwords(stopWordsFile);
+		}	
 		Composite treeComposite, train, test;
 		
-		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
-		OntologyTree tree = OntologyTree.getTree(ontologyFile);
-		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
-		System.out.println(urlMap.size());
-	
-		treeComposite = new Composite(tree);
-		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
-			String label = en.getValue().first();
-			Sample sample = new Sample(new Text(en.getKey()), Labels.getLabels(tree.getPath(label)));
-			treeComposite.addSample(sample);
-		}
-		System.out.println(treeComposite.countSample());
-		treeComposite.inner2outer();
-		System.out.println(treeComposite.countSample());
-		treeComposite.cutBranch(1);
-		treeComposite.save("result/treeAll");	
+//		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
+//		OntologyTree tree = OntologyTree.getTree(ontologyFile);
+//		Parser urlParser = new TokenizeParser(null, new SingleWordTokenizer(), new BigramSegmentParser(null));
+
+//		
+//		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
+//		System.out.println(urlMap.size());
+//		
+//		treeComposite = new Composite(tree);
+//		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
+//			String label = en.getValue().first(); 
+//			Sample sample = new Sample(new Text(urlParser.parse(en.getKey())), Labels.getLabels(tree.getPath(label)));
+//			treeComposite.addSample(sample);
+//		}
+//		System.out.println(treeComposite.countSample());
+//		treeComposite.cutBranch(1);
+//		treeComposite.save("result/treeAll");	
 		
 		treeComposite = new Composite("result/treeAll", new Texts());
+		//treeComposite.inner2outer();
+		System.out.println(treeComposite.countSample());
+	
 		
 		for (int i = 4; i >= 0; i--) {			
 
 			Vector<Composite> composites = treeComposite.split(new int[] {70, 30}, new Random(123));
 			train = composites.get(0);
 			System.out.println(train.countSample());
-			train.save("result/trainText");	
 			test = composites.get(1);
 			System.out.println(test.countSample());
-			test.save("result/testText");
-			
-			train = new Composite("result/trainText", new Texts());
-			test = new Composite("result/testText", new Texts());
 			
 			System.out.println("pachincko");
-			for (int stemmingMode = 0; stemmingMode < 1; stemmingMode++) {
-				SingleLabelClassifier singleLabelClassifier = new StuckPachinkoNBMClassifier(100000, stemmingMode);
-				//System.out.println("mode " + stemmingMode);
+			{
+				SingleLabelClassifier singleLabelClassifier = new StuckPachinkoNBMClassifier();
 				RunningTime.start();
 				singleLabelClassifier.train(train);
 				RunningTime.stop();
@@ -81,9 +99,8 @@ public class StuckTopDownNBMTest {
 			}
 	
 			System.out.println("beamSearch");
-			for (int stemmingMode = 0; stemmingMode < 1; stemmingMode++) {
-				SingleLabelClassifier singleLabelClassifier =new StuckBeamSearchNBMClassifier(100000, stemmingMode, 5);
-				//System.out.println("mode " + stemmingMode);
+			{
+				SingleLabelClassifier singleLabelClassifier =new StuckBeamSearchNBMClassifier(5);;
 				RunningTime.start();
 				singleLabelClassifier.train(train);
 				RunningTime.stop();
@@ -96,11 +113,11 @@ public class StuckTopDownNBMTest {
 				System.out.println("test time: " + RunningTime.get());
 				System.out.println("accuracy: " + evaluater.getAccuracy());
 			}
+		
 			
 			System.out.println("allPath");
-			for (int stemmingMode = 0; stemmingMode < 1; stemmingMode++) {
-				SingleLabelClassifier singleLabelClassifier = new StuckAllPathNBMClassifier(100000, stemmingMode);
-				//System.out.println("mode " + stemmingMode);
+			{
+				SingleLabelClassifier singleLabelClassifier = new StuckAllPathNBMClassifier();
 				RunningTime.start();
 				singleLabelClassifier.train(train);
 				RunningTime.stop();

@@ -72,7 +72,7 @@ public class SparseVectorSampleToWekaInstanceAdapter{
 	public Instance adaptSample(Sample sample, String label) {
 		int classID;
 		if (!labelMap.containsKey(label)) {
-			classID = labelMap.size();
+			return null;
 		} else {
 			classID = labelMap.get(label);
 		}
