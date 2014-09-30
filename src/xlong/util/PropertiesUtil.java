@@ -21,16 +21,14 @@ public class PropertiesUtil {
 	
 	private static final String defaultPropertiesFile = "default.properties";
 	private static final String propertiesFile = "info.properties";
-	private static final String[][] defaultPropertiesList = {
-		{"DBpedia_external_links.nt", "E:\\longx\\data\\external_links_en.nt"},
-		{"DBpedia_instance_types.nt", "E:\\longx\\data\\instance_types_en.nt"},
-		{"DBpedia_ontology.owl", "E:\\longx\\data\\dbpedia_2014.owl"},
-		{"mySpliter", " |-| "},
-		{"mySpliterReg", " \\|-\\| "},
-		};
+	private static String[][] defaultPropertiesList = {};
 	
 	private static Properties properties = null;
     
+	public static void setDefaultPropertiesList(String[][] list) {
+		defaultPropertiesList = list;
+	}
+	
     public static void listAllProperties(String filePath) throws IOException {
         Properties pps = new Properties();
         
@@ -73,8 +71,13 @@ public class PropertiesUtil {
     	if (Files.exists(Paths.get(propertiesFile))) {
     		return loadProperties(propertiesFile);
     	} else {
-    		System.out.println("Can't find properties file \"info.properties\"");
-    		return false;
+    		try {
+				WriteDefaultProperties(propertiesFile);
+			} catch (IOException e) {
+	        	System.out.println("Can't load properties file.");
+				return false;
+			}
+    		return loadProperties(propertiesFile);
     	}
     }
     
@@ -108,14 +111,13 @@ public class PropertiesUtil {
     	WriteDefaultProperties(propertiesFile);
     }
     
-    public static void init() throws IOException {
+    public static void showDefaultFile() throws IOException {
     	WriteDefaultProperties(defaultPropertiesFile);
-    	WriteDefaultProperties(propertiesFile);
     }
     
     public static void main(String [] args) throws IOException{
     	System.out.println(String.valueOf(defaultPropertiesList.length));
-    	init();
+    	showDefaultFile();
     	loadProperties();
     	System.out.println(getProperty("DBpedia_ontology.owl"));
     	listAllProperties();
