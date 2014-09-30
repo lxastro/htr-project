@@ -21,8 +21,7 @@ import xlong.util.RunningTime;
 import xlong.wm.classifier.SingleLabelClassifier;
 import xlong.wm.classifier.StuckPachinkoMultiBaseClassifier;
 import xlong.wm.classifier.partsfactory.ClassifierPartsFactory;
-import xlong.wm.evaluater.Evaluater;
-import xlong.wm.evaluater.SingleLabelEvaluater;
+import xlong.wm.evaluater.OntologySingleLabelEvaluater;
 import xlong.wm.ontology.OntologyTree;
 import xlong.wm.sample.Composite;
 import xlong.wm.sample.Labels;
@@ -70,37 +69,40 @@ public class FlatClassify {
 				return new TextToSparseVectorConverter(tokenizer)
 					.enableLowerCaseToken()
 					.enableStopwords()
-					.enableIDF()
+					//.enableIDF()
 					//.enableTF()
 					.enableDetemineByDocFreq()
 					.setMinTermFreq(2)
 					.setFilterShortWords(1)
 					.setIgnoreSmallFeatures(0)
-					//.setWordToKeep(100000)
+					.setWordToKeep(1000)
 					;
 			}
 			@Override
 			public Classifier getNewClassifier() {
-				return new weka.classifiers.bayes.NaiveBayesMultinomial();
+				//return new weka.classifiers.trees.Id3();
+				//return new weka.classifiers.trees.J48();
+				return new weka.classifiers.trees.RandomForest();
+				//return new weka.classifiers.bayes.NaiveBayesMultinomial();
 			}
 		};
 		Composite flatComposite = new Composite(flatTree);
 		
-		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
-		System.out.println(urlMap.size());
-		int cnt = 0;
-		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
-			cnt ++;
-			if (cnt % 100000 == 0) {
-				System.out.println(cnt);
-			}
-			Sample sample = new Sample(new Text(urlParser.parse(en.getKey())), Labels.getLabels(en.getValue()));
-			flatComposite.addSample(sample);
-		}
-		System.out.println(flatComposite.countSample());
-		flatComposite.cutBranch(1);
-		System.out.println(flatComposite.getComposites().size());
-		flatComposite.save("result/flatParsed");
+//		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
+//		System.out.println(urlMap.size());
+//		int cnt = 0;
+//		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
+//			cnt ++;
+//			if (cnt % 100000 == 0) {
+//				System.out.println(cnt);
+//			}
+//			Sample sample = new Sample(new Text(urlParser.parse(en.getKey())), Labels.getLabels(en.getValue()));
+//			flatComposite.addSample(sample);
+//		}
+//		System.out.println(flatComposite.countSample());
+//		flatComposite.cutBranch(1);
+//		System.out.println(flatComposite.getComposites().size());
+//		flatComposite.save("result/flatParsed");
 		
 		flatComposite = new Composite("result/flatParsed" ,new Texts());
 //		System.out.println(flatComposite.countSample());
@@ -123,12 +125,16 @@ public class FlatClassify {
 		RunningTime.stop();
 		System.out.println("train time: " + RunningTime.get());
 		
-		Evaluater evaluater = new SingleLabelEvaluater(singleLabelClassifier);
+		OntologySingleLabelEvaluater evaluater = new OntologySingleLabelEvaluater(singleLabelClassifier, tree);
 		RunningTime.start();
 		evaluater.evaluate(test);	
 		RunningTime.stop();
 		System.out.println("test time: " + RunningTime.get());
 		System.out.println("accuracy: " + evaluater.getAccuracy());
+		System.out.println("hamming loss: " + evaluater.getAverHammingLoss());
+		System.out.println("precision: " + evaluater.getAverPrecision());
+		System.out.println("recall: " + evaluater.getAverRecall());
+		System.out.println("f1: " + evaluater.getAverF1());
 		
 		BufferedWriter out = new BufferedWriter(new FileWriter("result/flatEvaluation"));
 		evaluater.output(out);

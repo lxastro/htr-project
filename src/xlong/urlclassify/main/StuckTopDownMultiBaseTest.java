@@ -23,8 +23,7 @@ import xlong.wm.classifier.StuckAllPathMultiBaseClassifier;
 import xlong.wm.classifier.StuckBeamSearchMultiBaseClassifier;
 import xlong.wm.classifier.StuckPachinkoMultiBaseClassifier;
 import xlong.wm.classifier.partsfactory.ClassifierPartsFactory;
-import xlong.wm.evaluater.Evaluater;
-import xlong.wm.evaluater.SingleLabelEvaluater;
+import xlong.wm.evaluater.OntologySingleLabelEvaluater;
 import xlong.wm.ontology.OntologyTree;
 import xlong.wm.sample.Composite;
 import xlong.wm.sample.Labels;
@@ -67,11 +66,12 @@ public class StuckTopDownMultiBaseTest {
 					.setMinTermFreq(2)
 					.setFilterShortWords(1)
 					.setIgnoreSmallFeatures(0)
-					//.setWordToKeep(100000)
+					.setWordToKeep(100000)
 					;
 			}
 			@Override
 			public Classifier getNewClassifier() {
+				//return new weka.classifiers.trees.RandomForest();
 				return new weka.classifiers.bayes.NaiveBayesMultinomial();
 			}
 		};
@@ -85,18 +85,18 @@ public class StuckTopDownMultiBaseTest {
 
 		Composite treeComposite, train, test;
 		
-		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
-		System.out.println(urlMap.size());
-		
-		treeComposite = new Composite(tree);
-		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
-			String label = en.getValue().first(); 
-			Sample sample = new Sample(new Text(urlParser.parse(en.getKey())), Labels.getLabels(tree.getPath(label)));
-			treeComposite.addSample(sample);
-		}
-		System.out.println(treeComposite.countSample());
-		treeComposite.cutBranch(1);
-		treeComposite.save("result/treeParsed");	
+//		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
+//		System.out.println(urlMap.size());
+//		
+//		treeComposite = new Composite(tree);
+//		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
+//			String label = en.getValue().first(); 
+//			Sample sample = new Sample(new Text(urlParser.parse(en.getKey())), Labels.getLabels(tree.getPath(label)));
+//			treeComposite.addSample(sample);
+//		}
+//		System.out.println(treeComposite.countSample());
+//		treeComposite.cutBranch(1);
+//		treeComposite.save("result/treeParsed");	
 		
 		treeComposite = new Composite("result/treeParsed", new Texts());
 		//treeComposite.inner2outer();
@@ -119,12 +119,16 @@ public class StuckTopDownMultiBaseTest {
 				RunningTime.stop();
 				System.out.println("train time: " + RunningTime.get());
 				
-				Evaluater evaluater = new SingleLabelEvaluater(singleLabelClassifier);
+				OntologySingleLabelEvaluater evaluater = new OntologySingleLabelEvaluater(singleLabelClassifier, tree);
 				RunningTime.start();
 				evaluater.evaluate(test);	
 				RunningTime.stop();
 				System.out.println("test time: " + RunningTime.get());
 				System.out.println("accuracy: " + evaluater.getAccuracy());
+				System.out.println("hamming loss: " + evaluater.getAverHammingLoss());
+				System.out.println("precision: " + evaluater.getAverPrecision());
+				System.out.println("recall: " + evaluater.getAverRecall());
+				System.out.println("f1: " + evaluater.getAverF1());
 				
 				BufferedWriter out = new BufferedWriter(new FileWriter("result/pachinkoEvaluation_" + (i+1)));
 				evaluater.output(out);
@@ -139,12 +143,16 @@ public class StuckTopDownMultiBaseTest {
 				RunningTime.stop();
 				System.out.println("train time: " + RunningTime.get());
 				
-				Evaluater evaluater = new SingleLabelEvaluater(singleLabelClassifier);
+				OntologySingleLabelEvaluater evaluater = new OntologySingleLabelEvaluater(singleLabelClassifier, tree);
 				RunningTime.start();
 				evaluater.evaluate(test);	
 				RunningTime.stop();
 				System.out.println("test time: " + RunningTime.get());
 				System.out.println("accuracy: " + evaluater.getAccuracy());
+				System.out.println("hamming loss: " + evaluater.getAverHammingLoss());
+				System.out.println("precision: " + evaluater.getAverPrecision());
+				System.out.println("recall: " + evaluater.getAverRecall());
+				System.out.println("f1: " + evaluater.getAverF1());
 				
 				BufferedWriter out = new BufferedWriter(new FileWriter("result/beamSearchEvaluation_" + (i+1)));
 				evaluater.output(out);
@@ -160,12 +168,16 @@ public class StuckTopDownMultiBaseTest {
 				RunningTime.stop();
 				System.out.println("train time: " + RunningTime.get());
 				
-				Evaluater evaluater = new SingleLabelEvaluater(singleLabelClassifier);
+				OntologySingleLabelEvaluater evaluater = new OntologySingleLabelEvaluater(singleLabelClassifier, tree);
 				RunningTime.start();
 				evaluater.evaluate(test);	
 				RunningTime.stop();
 				System.out.println("test time: " + RunningTime.get());
 				System.out.println("accuracy: " + evaluater.getAccuracy());
+				System.out.println("hamming loss: " + evaluater.getAverHammingLoss());
+				System.out.println("precision: " + evaluater.getAverPrecision());
+				System.out.println("recall: " + evaluater.getAverRecall());
+				System.out.println("f1: " + evaluater.getAverF1());
 				
 				BufferedWriter out = new BufferedWriter(new FileWriter("result/allPathEvaluation_" + (i+1)));
 				evaluater.output(out);

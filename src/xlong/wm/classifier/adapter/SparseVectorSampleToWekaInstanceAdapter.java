@@ -1,12 +1,12 @@
 package xlong.wm.classifier.adapter;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import weka.core.Attribute;
+import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
@@ -40,15 +40,39 @@ public class SparseVectorSampleToWekaInstanceAdapter{
 		dataSet = initInstances(labelMap);
 	}
 	
+//	//weka 3-7
+//	private Instances initInstances(Map<String, Integer> labelMap) {
+//		ArrayList<Attribute> atts = new ArrayList<Attribute>();
+//		ArrayList<String> attVals = new ArrayList<String>(labelMap.keySet());
+//		for (Entry<String, Integer> en:labelMap.entrySet()) {
+//			attVals.set(en.getValue(), en.getKey());
+//		}
+//		atts.add(new Attribute("class", attVals));
+//		for (int i = 0; i < numOfAttributes; i++) {
+//			atts.add(new Attribute(String.valueOf(i)));
+//		}
+//		Instances instances = new Instances("", atts, 0);
+//		instances.setClassIndex(0);
+//		return instances;
+//	}
+	
+	//weka 3-6
 	private Instances initInstances(Map<String, Integer> labelMap) {
-		ArrayList<Attribute> atts = new ArrayList<Attribute>();
-		ArrayList<String> attVals = new ArrayList<String>(labelMap.keySet());
+		FastVector atts = new FastVector();
+		FastVector attVals = new FastVector(labelMap.keySet().size());
+
+		String[] tmps = new String[labelMap.size()];
+		
 		for (Entry<String, Integer> en:labelMap.entrySet()) {
-			attVals.set(en.getValue(), en.getKey());
+			tmps[en.getValue()] = en.getKey();
 		}
-		atts.add(new Attribute("class", attVals));
+		for (String str:tmps) {
+			attVals.addElement(str);
+		}
+		atts.addElement(new Attribute("class", attVals));
+		
 		for (int i = 0; i < numOfAttributes; i++) {
-			atts.add(new Attribute(String.valueOf(i)));
+			atts.addElement(new Attribute(String.valueOf(i)));
 		}
 		Instances instances = new Instances("", atts, 0);
 		instances.setClassIndex(0);

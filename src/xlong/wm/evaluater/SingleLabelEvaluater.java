@@ -9,7 +9,7 @@ import xlong.wm.classifier.SingleLabelClassifier;
 import xlong.wm.sample.Composite;
 import xlong.wm.sample.Sample;
 
-public final class SingleLabelEvaluater extends Evaluater {
+public class SingleLabelEvaluater extends Evaluater {
 	
 	class Count {
 		int count;
@@ -21,9 +21,9 @@ public final class SingleLabelEvaluater extends Evaluater {
 		}
 	}
 	
-	private TreeMap<String, TreeMap<String, Count>> cnt;
-	private TreeSet<String> labelSet;
-	private int total;
+	protected TreeMap<String, TreeMap<String, Count>> cnt;
+	protected TreeSet<String> labelSet;
+	protected int total;
 	
 	
 	public SingleLabelEvaluater(SingleLabelClassifier singleLabelClassifier) {
