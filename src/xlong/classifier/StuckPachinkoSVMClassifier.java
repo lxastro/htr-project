@@ -13,7 +13,6 @@ import xlong.sample.Sample;
 import xlong.sample.converter.TextToSparseVectorConverter;
 
 public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
-	private int numOfFeatures;
 	private Map<String, weka.classifiers.Classifier> selecters;
 	private Map<String, weka.classifiers.Classifier> stuckers;
 	private Map<String, TextToSparseVectorConverter> selectConverters;

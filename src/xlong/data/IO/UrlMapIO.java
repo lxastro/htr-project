@@ -7,10 +7,6 @@ import java.util.HashMap;
 import java.util.TreeSet;
 import java.util.Map.Entry;
 
-import xlong.data.parser.BigramSegmentParser;
-import xlong.data.parser.Parser;
-import xlong.data.parser.TokenizeParser;
-import xlong.data.tokenizer.SingleWordTokenizer;
 import xlong.util.MyWriter;
 import xlong.util.PropertiesUtil;
 

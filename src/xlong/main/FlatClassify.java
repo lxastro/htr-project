@@ -6,8 +6,6 @@ import java.util.Random;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import org.omg.CORBA.PRIVATE_MEMBER;
-
 import xlong.classifier.SingleLabelClassifier;
 import xlong.classifier.StuckPachinkoNBMClassifier;
 import xlong.data.IO.UrlMapIO;
@@ -60,19 +58,19 @@ public class FlatClassify {
 		System.out.println(urlMap.size());
 	
 		Composite flatComposite = new Composite(flatTree);
-//		int cnt = 0;
-//		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
-//			cnt ++;
-//			if (cnt % 100000 == 0) {
-//				System.out.println(cnt);
-//			}
-//			Sample sample = new Sample(new Text(urlParser.parse(en.getKey())), Labels.getLabels(en.getValue()));
-//			flatComposite.addSample(sample);
-//		}
-//		System.out.println(flatComposite.countSample());
-//		System.out.println(flatComposite.getComposites().size());
-//		flatComposite.cutBranch(1);
-//		flatComposite.save("result/flatParsed");
+		int cnt = 0;
+		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
+			cnt ++;
+			if (cnt % 100000 == 0) {
+				System.out.println(cnt);
+			}
+			Sample sample = new Sample(new Text(urlParser.parse(en.getKey())), Labels.getLabels(en.getValue()));
+			flatComposite.addSample(sample);
+		}
+		System.out.println(flatComposite.countSample());
+		System.out.println(flatComposite.getComposites().size());
+		flatComposite.cutBranch(1);
+		flatComposite.save("result/flatParsed");
 		flatComposite = new Composite("result/flatParsed" ,new Texts());
 //		System.out.println(flatComposite.countSample());
 //		System.out.println(flatComposite.getComposites().size());

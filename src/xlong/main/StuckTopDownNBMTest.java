@@ -51,23 +51,23 @@ public class StuckTopDownNBMTest {
 		}	
 		Composite treeComposite, train, test;
 		
-//		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
-//		OntologyTree tree = OntologyTree.getTree(ontologyFile);
-//		Parser urlParser = new TokenizeParser(null, new SingleWordTokenizer(), new BigramSegmentParser(null));
+		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
+		OntologyTree tree = OntologyTree.getTree(ontologyFile);
+		Parser urlParser = new TokenizeParser(null, new SingleWordTokenizer(), new BigramSegmentParser(null));
 
-//		
-//		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
-//		System.out.println(urlMap.size());
-//		
-//		treeComposite = new Composite(tree);
-//		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
-//			String label = en.getValue().first(); 
-//			Sample sample = new Sample(new Text(urlParser.parse(en.getKey())), Labels.getLabels(tree.getPath(label)));
-//			treeComposite.addSample(sample);
-//		}
-//		System.out.println(treeComposite.countSample());
-//		treeComposite.cutBranch(1);
-//		treeComposite.save("result/treeAll");	
+		
+		HashMap<String, TreeSet<String>> urlMap = UrlMapIO.read("result/UrlMap.txt");
+		System.out.println(urlMap.size());
+		
+		treeComposite = new Composite(tree);
+		for (Entry<String, TreeSet<String>> en:urlMap.entrySet()) {
+			String label = en.getValue().first(); 
+			Sample sample = new Sample(new Text(urlParser.parse(en.getKey())), Labels.getLabels(tree.getPath(label)));
+			treeComposite.addSample(sample);
+		}
+		System.out.println(treeComposite.countSample());
+		treeComposite.cutBranch(1);
+		treeComposite.save("result/treeAll");	
 		
 		treeComposite = new Composite("result/treeAll", new Texts());
 		//treeComposite.inner2outer();
