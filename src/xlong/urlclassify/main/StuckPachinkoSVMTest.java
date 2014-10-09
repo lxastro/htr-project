@@ -2,8 +2,10 @@ package xlong.urlclassify.main;
 
 import java.util.Random;
 import java.util.Vector;
+
 import xlong.wm.evaluater.Evaluater;
-import xlong.wm.evaluater.SingleLabelEvaluater;
+import xlong.wm.evaluater.OntologySingleLabelEvaluater;
+import xlong.wm.ontology.OntologyTree;
 import xlong.wm.sample.Composite;
 import xlong.wm.sample.Texts;
 import xlong.util.MyWriter;
@@ -20,19 +22,22 @@ public class StuckPachinkoSVMTest {
 		PropertiesUtil.loadProperties();
 		Composite treeComposite, train, test;
 		
+		String ontologyFile = PropertiesUtil.getProperty("DBpedia_ontology.owl");
+		OntologyTree tree = OntologyTree.getTree(ontologyFile);
+		
 		treeComposite = new Composite("result/treeParsed", new Texts());
 		//treeComposite.treeComposite(1);
 		System.out.println(treeComposite.countSample());
 		System.out.println(treeComposite.getComposites().size());
 		Vector<Composite> composites;
 		
-//		composites = treeComposite.split(new int[] {10, 90}, new Random(123));
+//		composites = treeComposite.split(new int[] {1, 90}, new Random(123));
 //		treeComposite = composites.firstElement();
 //		System.out.println(treeComposite.countSample());
 //		treeComposite.cutBranch(10);
 //		System.out.println(treeComposite.countSample());
 		
-		composites = treeComposite.split(new int[] {20, 30}, new Random(123));
+		composites = treeComposite.split(new int[] {70, 30}, new Random(123));
 		train = composites.get(0);
 		System.out.println(train.countSample());
 		train.save("result/trainText");	
@@ -47,7 +52,7 @@ public class StuckPachinkoSVMTest {
 		System.out.println("train");
 		singleLabelClassifier.train(train);
 		
-		Evaluater evaluater = new SingleLabelEvaluater(singleLabelClassifier);
+		Evaluater evaluater = new OntologySingleLabelEvaluater(singleLabelClassifier, tree);
 		System.out.println("test");
 		MyWriter.setFile("result/evaluate", false);
 		evaluater.evaluate(test);	

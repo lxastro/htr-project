@@ -4,6 +4,7 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.Vector;
 
 import xlong.wm.classifier.SingleLabelClassifier;
 import xlong.wm.sample.Composite;
@@ -25,12 +26,16 @@ public class SingleLabelEvaluater extends Evaluater {
 	protected TreeSet<String> labelSet;
 	protected int total;
 	
+	private Vector<Sample> samples;
+	private Vector<String> actuals;
 	
 	public SingleLabelEvaluater(SingleLabelClassifier singleLabelClassifier) {
 		super(singleLabelClassifier);
 		cnt = new TreeMap<String, TreeMap<String, Count>>();
 		labelSet = new TreeSet<>();
 		total = 0;
+		samples = new Vector<>();
+		actuals = new Vector<>();
 	}
 	
 	private int getCnt(String actual, String predict) {
@@ -44,6 +49,8 @@ public class SingleLabelEvaluater extends Evaluater {
 	}
 	
 	private void addCnt(String actual, String predict) {
+		labelSet.add(actual);
+		labelSet.add(predict);
 		if (!cnt.containsKey(actual)) {
 			cnt.put(actual, new TreeMap<String, Count>());
 		}
@@ -53,12 +60,39 @@ public class SingleLabelEvaluater extends Evaluater {
 		cnt.get(actual).get(predict).addOne();
 	}
 
-	public void evaluate(Sample sample, String actual) throws Exception {
-		String predict = singleLabelClassifier.test(sample);
-		labelSet.add(actual);
-		labelSet.add(predict);
-		addCnt(actual, predict);
-		total++;
+//	private void evaluate(Sample sample, String actual) throws Exception {
+//		String predict = singleLabelClassifier.test(sample);
+//		addCnt(actual, predict);
+//		total++;
+//	}
+	
+	private void evaluate(Vector<Sample> samples, Vector<String> actual) throws Exception{
+		Vector<String> predicts = singleLabelClassifier.test(samples);
+		int n = predicts.size();
+		for (int i = 0; i < n; i++) {
+			addCnt(actual.get(i), predicts.get(i));
+		}
+		total += predicts.size();
+	}
+	
+	private void addEvaluate(Sample sample, String actual) {
+		samples.add(sample);
+		actuals.add(actual);
+	}
+	
+	private void addEvaluate(Composite composite) throws Exception {
+		for (Sample sample:composite.getSamples()) {
+			addEvaluate(sample, composite.getLabel().getText());
+		}
+		for (Composite sub:composite.getComposites()) {
+			addEvaluate(sub);
+		}	
+	}
+	
+	private void evaluate() throws Exception {
+		evaluate(samples, actuals);
+		samples = new Vector<>();
+		actuals = new Vector<>();
 	}
 	
 	@Override
@@ -89,12 +123,8 @@ public class SingleLabelEvaluater extends Evaluater {
 	
 	@Override
 	public void evaluate(Composite composite) throws Exception {
-		for (Sample sample:composite.getSamples()) {
-			evaluate(sample, composite.getLabel().getText());
-		}
-		for (Composite sub:composite.getComposites()) {
-			evaluate(sub);
-		}
+		addEvaluate(composite);
+		evaluate();
 	}
 
 	@Override

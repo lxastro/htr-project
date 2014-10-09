@@ -1,5 +1,12 @@
 package xlong.wm.classifier;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -13,18 +20,29 @@ import xlong.wm.sample.Sample;
 import xlong.wm.sample.converter.TextToSparseVectorConverter;
 
 public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
-	private Map<String, weka.classifiers.Classifier> selecters;
-	private Map<String, weka.classifiers.Classifier> stuckers;
+	private Map<String, String> selecters;
+	private Map<String, String> stuckers;
 	private Map<String, TextToSparseVectorConverter> selectConverters;
 	private Map<String, SparseVectorSampleToWekaInstanceAdapter> selectAdapters;
 	private Map<String, TextToSparseVectorConverter> stuckConverters;
 	private Map<String, SparseVectorSampleToWekaInstanceAdapter> stuckAdapters;
 	private Map<String, TreeSet<String>> sons;
+	private static String fileDir = "result/classifiers/";
+	private static int fileID = 0;
+	private static String extName = ".classifier";
 	//private static final String OPTION = "-M";
+	
+	static {
+		try {
+			Files.createDirectories(Paths.get(fileDir));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public StuckPachinkoSVMClassifier() {
-		selecters = new TreeMap<String,  weka.classifiers.Classifier>();
-		stuckers = new TreeMap<String,  weka.classifiers.Classifier>();
+		selecters = new TreeMap<String,  String>();
+		stuckers = new TreeMap<String,  String>();
 		selectConverters = new TreeMap<String, TextToSparseVectorConverter>();
 		selectAdapters = new TreeMap<String, SparseVectorSampleToWekaInstanceAdapter>();
 		stuckConverters = new TreeMap<String, TextToSparseVectorConverter>();
@@ -37,6 +55,34 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		//weka.classifiers.Classifier classifier = new weka.classifiers.functions.LibSVM(); //weka 3-6
 		//weka.classifiers.Classifier classifier = new weka.classifiers.functions.SMO();
 		//classifier.setOptions(weka.core.Utils.splitOptions(OPTION));	
+		return classifier;
+	}
+	
+	private String newFilePath() {
+		return fileDir + String.valueOf(fileID++) + extName;
+	}
+	
+	private String saveClassifier(weka.classifiers.Classifier classifier) throws Exception {
+		if (classifier == null) {
+			return null;
+		}
+		String fileName = newFilePath();
+		FileOutputStream fos = new FileOutputStream(fileName);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(classifier);
+        oos.close();
+		return fileName;
+	}
+	
+	private weka.classifiers.Classifier loadClassifier(String fileName) throws Exception {
+		if (fileName == null) {
+			return null;
+		}
+		System.out.println("load and test... " + fileName);
+		FileInputStream fis = new FileInputStream(fileName);
+		ObjectInputStream ois = new ObjectInputStream(fis);
+		weka.classifiers.Classifier classifier = (weka.classifiers.Classifier) ois.readObject();
+		ois.close();
 		return classifier;
 	}
 	
@@ -72,7 +118,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 			Vector<String> tags = new Vector<String>();
 			tags.add("neg"); tags.add("pos");
 			SparseVectorSampleToWekaInstanceAdapter adapter = new SparseVectorSampleToWekaInstanceAdapter(numOfAtts, tags);
-			Instances instances = adapter.getDataSet();
+			Instances instances = new Instances(adapter.getDataSet());
 			for (Sample sample:vecComposite.getSamples()) {
 				instances.add(adapter.adaptSample(sample, "pos"));
 			}
@@ -83,34 +129,38 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 			System.out.println("train stucker...");
 			stucker.buildClassifier(instances);
 			
-			stuckers.put(label, stucker);
+			stuckers.put(label, saveClassifier(stucker));
 			stuckAdapters.put(label, adapter);
 			stuckConverters.put(label, converter);
+			
+			stucker = null;
+			System.gc();
 		}
 		TreeSet<String> sublabels = new TreeSet<String>();
+		
+		Vector<String> tags = new Vector<String>();
+		tags.add("neg"); tags.add("pos");
+		
+		TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer());
+		//System.out.println("build selecter dictionary...");
+		for (Composite subcompAll:composite.getComposites()) {
+			converter.buildDictionary(subcompAll);
+		}
+		//System.out.println("determine selecter dictionary...");
+		converter.determineDictionary();
+		//System.out.println(converter.getDictionary().size());
+		
+		int numOfAtts = converter.dictionarySize();
+		SparseVectorSampleToWekaInstanceAdapter adapter = new SparseVectorSampleToWekaInstanceAdapter(numOfAtts, tags);
+		
 		for (Composite subcomp:composite.getComposites()) {
 			sublabels.add(subcomp.getLabel().getText());
 			System.out.println("subcomp: " + subcomp.getLabel().getText());
 			
 			weka.classifiers.Classifier selecter = newClassifier();
-			
-			TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer());
-			
-			Vector<String> tags = new Vector<String>();
-			tags.add("neg"); tags.add("pos");
-			
-			//System.out.println("build selecter dictionary...");
-			for (Composite subcompAll:composite.getComposites()) {
-				converter.buildDictionary(subcompAll);
-			}
-			//System.out.println("determine selecter dictionary...");
-			converter.determineDictionary();
-			//System.out.println(converter.getDictionary().size());
-			
+					
 			//System.out.println("convert selecter...");
-			int numOfAtts = converter.dictionarySize();
-			SparseVectorSampleToWekaInstanceAdapter adapter = new SparseVectorSampleToWekaInstanceAdapter(numOfAtts, tags);
-			Instances instances = adapter.getDataSet();
+			Instances instances = new Instances(adapter.getDataSet());
 			int cntPos = 0;
 			for (Composite subcompOther:composite.getComposites()) {
 				if (subcompOther.getLabel().compareTo(subcomp.getLabel()) != 0) {
@@ -124,9 +174,13 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 			//System.out.println(instances.classAttribute().numValues());
 			selecter.buildClassifier(instances);
 			
-			selecters.put(subcomp.getLabel().getText(), selecter);
+			selecters.put(subcomp.getLabel().getText(), saveClassifier(selecter));
 			selectAdapters.put(subcomp.getLabel().getText(), adapter);
-			selectConverters.put(subcomp.getLabel().getText(), converter);		
+			selectConverters.put(subcomp.getLabel().getText(), converter);	
+			
+			instances = null;
+			selecter = null;
+			System.gc();
 		}
 		sons.put(label, sublabels);
 	}
@@ -150,7 +204,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		if (subLabels == null) {
 			return label;
 		}
-		weka.classifiers.Classifier stucker = stuckers.get(label);
+		weka.classifiers.Classifier stucker = loadClassifier(stuckers.get(label));
 		if (stucker != null) {
 			TextToSparseVectorConverter converter = stuckConverters.get(label);
 			Sample vecSample = converter.convert(sample);
@@ -163,7 +217,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		double maximum = -1;
 		String maxLabel = null;
 		for (String subLabel:subLabels) {
-			weka.classifiers.Classifier selecter = selecters.get(subLabel);
+			weka.classifiers.Classifier selecter = loadClassifier(selecters.get(subLabel));
 			TextToSparseVectorConverter converter = selectConverters.get(subLabel);
 			Sample vecSample = converter.convert(sample);
 			SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(subLabel);
@@ -176,4 +230,94 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		return test(maxLabel, sample);
 	}
 
+	@Override
+	public Vector<String> test(Vector<Sample> samples) throws Exception {
+		return test("root", samples);
+	}
+	
+
+	public Vector<String> test(String label, Vector<Sample> samples) throws Exception {
+		Vector<String> results = new Vector<String>();
+		TreeSet<String> sublabelSet= sons.get(label);
+		
+		int n = samples.size();
+		
+		if (sublabelSet == null) {
+			for (int i = 0; i < n; i++) {
+				results.add(label);
+			}
+			return results;
+		}
+		Vector<String> subLabels = new Vector<String>(sublabelSet);
+		
+		int m = subLabels.size();
+		String[] nextLabel = new String[n];
+		double[][] probs = new double[n][m];
+		
+		weka.classifiers.Classifier stucker = loadClassifier(stuckers.get(label));
+		if (stucker != null) {
+			for (int i = 0; i < n; i++) {
+				Sample sample = samples.get(i);
+				TextToSparseVectorConverter converter = stuckConverters.get(label);
+				Sample vecSample = converter.convert(sample);
+				SparseVectorSampleToWekaInstanceAdapter adapter = stuckAdapters.get(label);
+				int classID = (int)(stucker.classifyInstance(adapter.adaptSample(vecSample)) + 0.5);
+				if (classID == 1) {
+					nextLabel[i] = label ;
+				} else {
+					nextLabel[i] = null;
+				}
+			}
+		}
+		stucker = null;
+
+		for (int j = 0; j < m; j++) {
+			String subLabel = subLabels.get(j);
+			weka.classifiers.Classifier selecter = loadClassifier(selecters.get(subLabel));
+			TextToSparseVectorConverter converter = selectConverters.get(subLabel);
+			SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(subLabel);
+			for (int i = 0; i < n; i++) {
+				if (nextLabel[i] == null) {
+					Sample sample = samples.get(i);
+					Sample vecSample = converter.convert(sample);
+					probs[i][j] = selecter.distributionForInstance(adapter.adaptSample(vecSample))[1];
+				}
+			}
+		}
+		
+		for (int i = 0; i < n; i++) {
+			if (nextLabel[i] == null) {
+				double maximum = -1;
+				for (int j = 0; j < m; j++) {
+					if (probs[i][j] > maximum) {
+						nextLabel[i] = subLabels.get(j);
+						maximum = probs[i][j];
+					}
+				}
+			}
+		}
+		
+		for (int j = 0; j < m; j++) {
+			String subLabel = subLabels.get(j);
+			Vector<Sample> partsSamples = new Vector<Sample>();
+			for (int i = 0; i < n; i++) {
+				if (nextLabel[i] == subLabel) {
+					partsSamples.add(samples.get(i));
+				}
+			}
+			Vector<String> partsRes = test(subLabel, partsSamples);
+			int idx = 0;
+			for (int i = 0; i < n; i++) {
+				if (nextLabel[i] == subLabel) {
+					nextLabel[i] = partsRes.get(idx);
+					idx++;
+				}
+			}			
+		}
+		for (int i = 0; i < n; i++) {
+			results.add(nextLabel[i]);
+		}
+		return results;
+	}
+	
 }

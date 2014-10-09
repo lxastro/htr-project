@@ -75,7 +75,7 @@ public abstract class StuckTopDownMultiBaseClassifier extends AbstractSingleLabe
 			Vector<String> labels = new Vector<String>();
 			labels.add("neg"); labels.add("pos");
 			SparseVectorSampleToWekaInstanceAdapter adapter = new SparseVectorSampleToWekaInstanceAdapter(numOfAtts, labels);
-			Instances instances = adapter.getDataSet();
+			Instances instances = new Instances(adapter.getDataSet());
 			for (Sample sample:vecComposite.getSamples()) {
 				instances.add(adapter.adaptSample(sample, "pos"));
 			}
@@ -116,7 +116,7 @@ public abstract class StuckTopDownMultiBaseClassifier extends AbstractSingleLabe
 		SparseVectorSampleToWekaInstanceAdapter adapter = new SparseVectorSampleToWekaInstanceAdapter(numOfAtts, labels);
 		//System.out.println(labels.size());
 		
-		Instances instances = adapter.getDataSet();
+		Instances instances = new Instances(adapter.getDataSet());
 		for (Composite subcomp:composite.getComposites()) {
 			addAll(instances, adapter, converter.convert(subcomp), subcomp.getLabel().getText());
 		}
@@ -161,4 +161,14 @@ public abstract class StuckTopDownMultiBaseClassifier extends AbstractSingleLabe
 		}
 		
 	}
+	
+	@Override
+	public Vector<String> test(Vector<Sample> samples) throws Exception {
+		Vector<String> results = new Vector<String>();
+		for (Sample sample:samples) {
+			results.add(test(sample));
+		}
+		return results;
+	}
+	
 }
