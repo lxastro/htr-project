@@ -11,6 +11,7 @@ import java.util.Vector;
 import weka.classifiers.Classifier;
 import xlong.nlp.parser.BigramSegmentParser;
 import xlong.nlp.parser.Parser;
+import xlong.nlp.parser.SnowballStemParser;
 import xlong.nlp.parser.TokenizeParser;
 import xlong.nlp.parser.UnionParser;
 import xlong.nlp.tokenizer.SingleWordTokenizer;
@@ -45,6 +46,7 @@ public class FlatClassify {
 		BigramSegmentParser.setWeigth(1);
 		Parser segParser = new TokenizeParser(null, new SingleWordTokenizer(), new  BigramSegmentParser(null));
 		Parser simpleParser = new TokenizeParser(null, new SingleWordTokenizer());
+		Parser stemParser = new TokenizeParser(null, new SingleWordTokenizer(), new  BigramSegmentParser(null, new SnowballStemParser(null)));
 		Parser parser = new UnionParser(null, segParser, simpleParser);
 		Parser urlParser = parser;
 		String[] stopWordsFiles = new String[] {
@@ -69,21 +71,21 @@ public class FlatClassify {
 				return new TextToSparseVectorConverter(tokenizer)
 					.enableLowerCaseToken()
 					.enableStopwords()
-					//.enableIDF()
+					.enableIDF()
 					//.enableTF()
 					.enableDetemineByDocFreq()
 					.setMinTermFreq(2)
 					.setFilterShortWords(1)
 					.setIgnoreSmallFeatures(0)
-					.setWordToKeep(1000)
+					//.setWordToKeep(50000)
 					;
 			}
 			@Override
 			public Classifier getNewClassifier() {
 				//return new weka.classifiers.trees.Id3();
 				//return new weka.classifiers.trees.J48();
-				return new weka.classifiers.trees.RandomForest();
-				//return new weka.classifiers.bayes.NaiveBayesMultinomial();
+				//return new weka.classifiers.trees.RandomForest();
+				return new weka.classifiers.bayes.NaiveBayesMultinomial();
 			}
 		};
 		Composite flatComposite = new Composite(flatTree);

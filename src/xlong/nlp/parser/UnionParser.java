@@ -2,24 +2,29 @@ package xlong.nlp.parser;
 
 public class UnionParser extends Parser {
 
-	private Parser parser1;
-	private Parser parser2;
+	private Parser[] parsers;
 	private String delimiter;
 	
-	public UnionParser(Parser father, Parser parser1, Parser parser2, String delimiter) {
+	public UnionParser(Parser father, String delimiter, Parser... parsers) {
 		super(father);
-		this.parser1 = parser1;
-		this.parser2 = parser2;
+		this.parsers = parsers;
 		this.delimiter = delimiter;
 	}
 	
-	public UnionParser(Parser father, Parser parser1, Parser parser2){
-		this(father, parser1, parser2, " ");
+	public UnionParser(Parser father, Parser... parsers){
+		this(father, " ", parsers);
 	}
 
 	@Override
 	protected String myParse(String text) {
-		return parser1.parse(text) + delimiter + parser2.parse(text);
+		StringBuilder s = new StringBuilder();
+		for (int i = 0; i < parsers.length; i++) {
+			if (i > 0) {
+				s.append(delimiter);
+			}
+			s.append(parsers[i].parse(text));
+		}
+		return s.toString();
 	}
 
 }

@@ -35,10 +35,10 @@ public class OntologySingleLabelEvaluater extends SingleLabelEvaluater {
 				}
 				TreeSet<String> actualSet = tree.getPath(labels[i]);
 				TreeSet<String> predictSet = tree.getPath(labels[j]);
-				int nt = actualSet.size();
-				int np = predictSet.size();
+				int nt = actualSet.size() - 1;
+				int np = predictSet.size() - 1;
 				actualSet.retainAll(predictSet);
-				int ns = actualSet.size();
+				int ns = actualSet.size() - 1;
 				if (ns != 0) {
 					ham += cm[i][j] * ((double)ns) / (nt + np - ns);
 					pre += cm[i][j] * ((double)ns) / (np);

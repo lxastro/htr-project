@@ -1,12 +1,12 @@
 package xlong.wm.classifier.adapter;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import weka.core.Attribute;
-import weka.core.FastVector;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.SparseInstance;
@@ -58,8 +58,8 @@ public class SparseVectorSampleToWekaInstanceAdapter{
 	
 	//weka 3-6
 	private Instances initInstances(Map<String, Integer> labelMap) {
-		FastVector atts = new FastVector();
-		FastVector attVals = new FastVector(labelMap.keySet().size());
+		weka.core.FastVector atts = new weka.core.FastVector();
+		weka.core.FastVector attVals = new weka.core.FastVector(labelMap.keySet().size());
 
 		String[] tmps = new String[labelMap.size()];
 		

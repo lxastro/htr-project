@@ -32,6 +32,14 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		sons = new TreeMap<String, TreeSet<String>>();
 	}
 	
+	private weka.classifiers.Classifier newClassifier() throws Exception {
+		weka.classifiers.Classifier classifier = new xlong.urlclassify.others.LibLINEAR(); //weka 3-7
+		//weka.classifiers.Classifier classifier = new weka.classifiers.functions.LibSVM(); //weka 3-6
+		//weka.classifiers.Classifier classifier = new weka.classifiers.functions.SMO();
+		//classifier.setOptions(weka.core.Utils.splitOptions(OPTION));	
+		return classifier;
+	}
+	
 	@Override
 	public void train(Composite composite) throws Exception {
 		train(composite.getLabel().getText(), composite);
@@ -103,15 +111,17 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 			int numOfAtts = converter.dictionarySize();
 			SparseVectorSampleToWekaInstanceAdapter adapter = new SparseVectorSampleToWekaInstanceAdapter(numOfAtts, tags);
 			Instances instances = adapter.getDataSet();
+			int cntPos = 0;
 			for (Composite subcompOther:composite.getComposites()) {
 				if (subcompOther.getLabel().compareTo(subcomp.getLabel()) != 0) {
-					addAll(instances, adapter, converter.convert(subcomp), "neg");
+					addAll(instances, adapter, converter.convert(subcompOther), "neg");
 				} else {
-					addAll(instances, adapter, converter.convert(subcomp), "pos");
+					addAll(instances, adapter, converter.convert(subcompOther), "pos");
+					cntPos += subcompOther.countSample();
 				}
 			}
-			System.out.println("train selecter...");
-			System.out.println(instances.classAttribute().numValues());
+			System.out.println("train selecter... instances: " + instances.numInstances() + " pos: " + cntPos);
+			//System.out.println(instances.classAttribute().numValues());
 			selecter.buildClassifier(instances);
 			
 			selecters.put(subcomp.getLabel().getText(), selecter);
@@ -120,12 +130,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		}
 		sons.put(label, sublabels);
 	}
-	
-	private weka.classifiers.Classifier newClassifier() throws Exception {
-		weka.classifiers.functions.SMO classifier = new weka.classifiers.functions.SMO();
-		//classifier.setOptions(weka.core.Utils.splitOptions(OPTION));	
-		return classifier;
-	}
+
 	private void addAll(Instances instances, SparseVectorSampleToWekaInstanceAdapter adapter, Composite composite, String label) {
 		for (Sample sample:composite.getSamples()) {
 			instances.add(adapter.adaptSample(sample, label));

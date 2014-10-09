@@ -60,13 +60,13 @@ public class StuckTopDownMultiBaseTest {
 				return new TextToSparseVectorConverter(tokenizer)
 					.enableLowerCaseToken()
 					.enableStopwords()
-					//.enableIDF()
+					.enableIDF()
 					//.enableTF()
 					.enableDetemineByDocFreq()
 					.setMinTermFreq(2)
 					.setFilterShortWords(1)
 					.setIgnoreSmallFeatures(0)
-					.setWordToKeep(100000)
+					//.setWordToKeep(100000)
 					;
 			}
 			@Override

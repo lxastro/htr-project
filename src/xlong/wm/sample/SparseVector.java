@@ -1,7 +1,7 @@
 package xlong.wm.sample;
 
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 /**
  * 
@@ -19,7 +19,7 @@ public class SparseVector implements Property {
 	 * 
 	 * @param vector vector
 	 */
-	public SparseVector(final Map<Integer, Double> vector, int totalLength) {
+	public SparseVector(final TreeMap<Integer, Double> vector, int totalLength) {
 		int size = vector.size();
 		indexs = new int[size];
 		values = new double[size];

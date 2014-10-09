@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 import xlong.nlp.tokenizer.Tokenizer;
 import xlong.wm.sample.Composite;
@@ -238,8 +239,8 @@ public class TextToSparseVectorConverter {
 		
 	}
 	
-	public Map<Integer, Double> convert(String text){
-		HashMap<Integer, Double> vector = new HashMap<Integer, Double>();
+	public TreeMap<Integer, Double> convert(String text){
+		TreeMap<Integer, Double> vector = new TreeMap<Integer, Double>();
 		List<String> words = tokenizer.tokenize(text);
 		for (String word : words) {
 			if (this.s_lowerCaseTokens == true) {
@@ -280,7 +281,7 @@ public class TextToSparseVectorConverter {
 	        }
 	    }
 	    
-	    HashMap<Integer, Double> newVector = new HashMap<Integer, Double>();
+	    TreeMap<Integer, Double> newVector = new TreeMap<Integer, Double>();
 	    for (Entry<Integer, Double> en:vector.entrySet()){
 	    	if (en.getValue() > s_ignoreSmallFeature) {
 	    		newVector.put(en.getKey() + 1, en.getValue());
