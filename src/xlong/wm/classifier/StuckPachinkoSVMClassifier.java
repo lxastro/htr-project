@@ -58,6 +58,10 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		return classifier;
 	}
 	
+	private String join(String s1, String s2) {
+		return s1 + "_" + s2;
+	}
+	
 	private String newFilePath() {
 		return fileDir + String.valueOf(fileID++) + extName;
 	}
@@ -155,7 +159,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		
 		for (Composite subcomp:composite.getComposites()) {
 			sublabels.add(subcomp.getLabel().getText());
-			System.out.println("subcomp: " + subcomp.getLabel().getText());
+			System.out.println("subcomp: " + join(label, subcomp.getLabel().getText()));
 			
 			weka.classifiers.Classifier selecter = newClassifier();
 					
@@ -174,9 +178,9 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 			//System.out.println(instances.classAttribute().numValues());
 			selecter.buildClassifier(instances);
 			
-			selecters.put(subcomp.getLabel().getText(), saveClassifier(selecter));
-			selectAdapters.put(subcomp.getLabel().getText(), adapter);
-			selectConverters.put(subcomp.getLabel().getText(), converter);	
+			selecters.put(join(label, subcomp.getLabel().getText()), saveClassifier(selecter));
+			selectAdapters.put(join(label, subcomp.getLabel().getText()), adapter);
+			selectConverters.put(join(label, subcomp.getLabel().getText()), converter);	
 			
 			instances = null;
 			selecter = null;
@@ -217,10 +221,10 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		double maximum = -1;
 		String maxLabel = null;
 		for (String subLabel:subLabels) {
-			weka.classifiers.Classifier selecter = loadClassifier(selecters.get(subLabel));
-			TextToSparseVectorConverter converter = selectConverters.get(subLabel);
+			weka.classifiers.Classifier selecter = loadClassifier(selecters.get(join(label, subLabel)));
+			TextToSparseVectorConverter converter = selectConverters.get(join(label, subLabel));
 			Sample vecSample = converter.convert(sample);
-			SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(subLabel);
+			SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(join(label, subLabel));
 			double[] probs = selecter.distributionForInstance(adapter.adaptSample(vecSample));
 			if (probs[1] > maximum) {
 				maximum = probs[1];
@@ -273,9 +277,9 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 
 		for (int j = 0; j < m; j++) {
 			String subLabel = subLabels.get(j);
-			weka.classifiers.Classifier selecter = loadClassifier(selecters.get(subLabel));
-			TextToSparseVectorConverter converter = selectConverters.get(subLabel);
-			SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(subLabel);
+			weka.classifiers.Classifier selecter = loadClassifier(selecters.get(join(label, subLabel)));
+			TextToSparseVectorConverter converter = selectConverters.get(join(label, subLabel));
+			SparseVectorSampleToWekaInstanceAdapter adapter = selectAdapters.get(join(label, subLabel));
 			for (int i = 0; i < n; i++) {
 				if (nextLabel[i] == null) {
 					Sample sample = samples.get(i);

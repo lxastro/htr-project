@@ -3,7 +3,6 @@ package xlong.urlclassify.main;
 import java.util.Random;
 import java.util.Vector;
 
-import xlong.wm.evaluater.Evaluater;
 import xlong.wm.evaluater.OntologySingleLabelEvaluater;
 import xlong.wm.ontology.OntologyTree;
 import xlong.wm.sample.Composite;
@@ -52,12 +51,17 @@ public class StuckPachinkoSVMTest {
 		System.out.println("train");
 		singleLabelClassifier.train(train);
 		
-		Evaluater evaluater = new OntologySingleLabelEvaluater(singleLabelClassifier, tree);
+		OntologySingleLabelEvaluater evaluater = new OntologySingleLabelEvaluater(singleLabelClassifier, tree);
 		System.out.println("test");
 		MyWriter.setFile("result/evaluate", false);
 		evaluater.evaluate(test);	
 		MyWriter.close();
 		System.out.println(evaluater.getAccuracy());
+		System.out.println("accuracy: " + evaluater.getAccuracy());
+		System.out.println("hamming loss: " + evaluater.getAverHammingLoss());
+		System.out.println("precision: " + evaluater.getAverPrecision());
+		System.out.println("recall: " + evaluater.getAverRecall());
+		System.out.println("f1: " + evaluater.getAverF1());
 	}
 
 }
