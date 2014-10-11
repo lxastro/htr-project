@@ -1,8 +1,6 @@
 package xlong.wm.classifier;
 
 import java.util.PriorityQueue;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import xlong.wm.classifier.adapter.SparseVectorSampleToWekaInstanceAdapter;
 import xlong.wm.classifier.partsfactory.ClassifierPartsFactory;
@@ -10,18 +8,16 @@ import xlong.wm.sample.Sample;
 import xlong.wm.sample.converter.TextToSparseVectorConverter;
 
 public class StuckBeamSearchMultiBaseClassifier extends StuckTopDownMultiBaseClassifier  {
-	private int beamWidth;
+	private final int beamWidth;
 	
 	public StuckBeamSearchMultiBaseClassifier(ClassifierPartsFactory factory, int beamWidth) {
 		super(factory);
 		this.beamWidth = beamWidth;
-		selecters = new TreeMap<String, weka.classifiers.Classifier>();
-		stuckers = new TreeMap<String, weka.classifiers.Classifier>();
-		selectConverters = new TreeMap<String, TextToSparseVectorConverter>();
-		selectAdapters = new TreeMap<String, SparseVectorSampleToWekaInstanceAdapter>();
-		stuckConverters = new TreeMap<String, TextToSparseVectorConverter>();
-		stuckAdapters = new TreeMap<String, SparseVectorSampleToWekaInstanceAdapter>();	
-		sons = new TreeMap<String, TreeSet<String>>();
+	}
+	
+	public  StuckBeamSearchMultiBaseClassifier(StuckTopDownMultiBaseClassifier classifier, int beamWidth) {
+		super(classifier);
+		this.beamWidth = beamWidth;
 	}
 	
 	@Override

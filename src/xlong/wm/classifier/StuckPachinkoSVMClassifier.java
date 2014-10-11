@@ -13,8 +13,8 @@ import java.util.TreeSet;
 import java.util.Vector;
 
 import weka.core.Instances;
-import xlong.nlp.tokenizer.SingleWordTokenizer;
 import xlong.wm.classifier.adapter.SparseVectorSampleToWekaInstanceAdapter;
+import xlong.wm.classifier.partsfactory.ClassifierPartsFactory;
 import xlong.wm.sample.Composite;
 import xlong.wm.sample.Sample;
 import xlong.wm.sample.converter.TextToSparseVectorConverter;
@@ -27,6 +27,8 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 	private Map<String, TextToSparseVectorConverter> stuckConverters;
 	private Map<String, SparseVectorSampleToWekaInstanceAdapter> stuckAdapters;
 	private Map<String, TreeSet<String>> sons;
+	protected ClassifierPartsFactory factory;
+	
 	private static String fileDir = "result/classifiers/";
 	private static int fileID = 0;
 	private static String extName = ".classifier";
@@ -40,7 +42,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		}
 	}
 
-	public StuckPachinkoSVMClassifier() {
+	public StuckPachinkoSVMClassifier(ClassifierPartsFactory factory) {
 		selecters = new TreeMap<String,  String>();
 		stuckers = new TreeMap<String,  String>();
 		selectConverters = new TreeMap<String, TextToSparseVectorConverter>();
@@ -48,15 +50,28 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		stuckConverters = new TreeMap<String, TextToSparseVectorConverter>();
 		stuckAdapters = new TreeMap<String, SparseVectorSampleToWekaInstanceAdapter>();	
 		sons = new TreeMap<String, TreeSet<String>>();
+		this.factory = factory;
 	}
 	
-	private weka.classifiers.Classifier newClassifier() throws Exception {
-		weka.classifiers.Classifier classifier = new xlong.urlclassify.others.LibLINEAR(); //weka 3-7
-		//weka.classifiers.Classifier classifier = new weka.classifiers.functions.LibSVM(); //weka 3-6
-		//weka.classifiers.Classifier classifier = new weka.classifiers.functions.SMO();
-		//classifier.setOptions(weka.core.Utils.splitOptions(OPTION));	
-		return classifier;
+	public StuckPachinkoSVMClassifier(StuckPachinkoSVMClassifier classifiers) {
+		selecters = classifiers.selecters;
+		stuckers = classifiers.stuckers;
+		selectConverters = classifiers.selectConverters;
+		stuckConverters = classifiers.stuckConverters;
+		selectAdapters = classifiers.selectAdapters;
+		stuckAdapters = classifiers.stuckAdapters;
+		sons = classifiers.sons;
+		factory = classifiers.factory;
 	}
+	
+	private TextToSparseVectorConverter getNewConverter() {
+		return factory.getNewConverter();
+	}
+	
+	private weka.classifiers.Classifier getNewClassifier() {
+		return factory.getNewClassifier();
+	}
+	
 	
 	private String join(String s1, String s2) {
 		return s1 + "_" + s2;
@@ -107,9 +122,9 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		if (composite.getSamples().size() == 0) {
 			stuckers.put(label, null);
 		} else {
-			weka.classifiers.Classifier stucker = newClassifier();
+			weka.classifiers.Classifier stucker = getNewClassifier();
 			
-			TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer());
+			TextToSparseVectorConverter converter = getNewConverter();
 			//System.out.println("build stucker dictionary...");
 			converter.buildDictionary(composite);
 			//System.out.println("determine stucker dictionary...");
@@ -145,7 +160,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 		Vector<String> tags = new Vector<String>();
 		tags.add("neg"); tags.add("pos");
 		
-		TextToSparseVectorConverter converter = new TextToSparseVectorConverter(new SingleWordTokenizer());
+		TextToSparseVectorConverter converter = getNewConverter();
 		//System.out.println("build selecter dictionary...");
 		for (Composite subcompAll:composite.getComposites()) {
 			converter.buildDictionary(subcompAll);
@@ -161,7 +176,7 @@ public class StuckPachinkoSVMClassifier extends AbstractSingleLabelClassifier  {
 			sublabels.add(subcomp.getLabel().getText());
 			System.out.println("subcomp: " + join(label, subcomp.getLabel().getText()));
 			
-			weka.classifiers.Classifier selecter = newClassifier();
+			weka.classifiers.Classifier selecter = getNewClassifier();
 					
 			//System.out.println("convert selecter...");
 			Instances instances = new Instances(adapter.getDataSet());

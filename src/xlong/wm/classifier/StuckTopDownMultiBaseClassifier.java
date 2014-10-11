@@ -35,6 +35,17 @@ public abstract class StuckTopDownMultiBaseClassifier extends AbstractSingleLabe
 		this.factory = factory;
 	}
 	
+	public StuckTopDownMultiBaseClassifier(StuckTopDownMultiBaseClassifier classifiers) {
+		selecters = classifiers.selecters;
+		stuckers = classifiers.stuckers;
+		selectConverters = classifiers.selectConverters;
+		stuckConverters = classifiers.stuckConverters;
+		selectAdapters = classifiers.selectAdapters;
+		stuckAdapters = classifiers.stuckAdapters;
+		sons = classifiers.sons;
+		factory = classifiers.factory;
+	}
+	
 	@Override
 	public void train(Composite composite) throws Exception {
 		train(composite.getLabel().getText(), composite);
@@ -156,7 +167,6 @@ public abstract class StuckTopDownMultiBaseClassifier extends AbstractSingleLabe
 
 		@Override
 		public int compare(Pair o1, Pair o2) {
-			// TODO Auto-generated method stub
 			return -(int)Math.signum(o1.prob-o2.prob);
 		}
 		
