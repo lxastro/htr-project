@@ -11,6 +11,7 @@ import xlong.wm.sample.Texts;
 import xlong.wm.sample.converter.TextToSparseVectorConverter;
 import xlong.nlp.tokenizer.SingleWordTokenizer;
 import xlong.nlp.tokenizer.Tokenizer;
+import xlong.urlclassify.others.SPegasos;
 import xlong.util.MyWriter;
 import xlong.util.PropertiesUtil;
 import xlong.wm.classifier.SingleLabelClassifier;
@@ -57,6 +58,14 @@ public class StuckPachinkoSVMTest {
 			@Override
 			public Classifier getNewClassifier() {
 				weka.classifiers.Classifier classifier = new xlong.urlclassify.others.LibLINEAR(); //weka 3-7
+				
+//				weka.classifiers.Classifier classifier = new xlong.urlclassify.others.SPegasos(); //weka 3-7
+//				try {
+//					((SPegasos) classifier).setOptions(weka.core.Utils.splitOptions("-N -M -E 10"));
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}	
+//				
 				//weka.classifiers.Classifier classifier = new weka.classifiers.functions.LibSVM(); //weka 3-6
 				//weka.classifiers.Classifier classifier = new weka.classifiers.functions.SMO();
 				//classifier.setOptions(weka.core.Utils.splitOptions(OPTION));	
@@ -68,8 +77,8 @@ public class StuckPachinkoSVMTest {
 		OntologyTree tree = OntologyTree.getTree(ontologyFile);
 		
 		Composite treeComposite, train, test;
-		treeComposite = new Composite("result/flatParsed", new Texts());
-		//treeComposite.treeComposite(1);
+		treeComposite = new Composite("result/treeSmall", new Texts());
+//		treeComposite.flatComposite(1);
 		System.out.println(treeComposite.countSample());
 		System.out.println(treeComposite.getComposites().size());
 		Vector<Composite> composites;
