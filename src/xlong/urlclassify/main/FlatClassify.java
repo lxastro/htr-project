@@ -1,7 +1,9 @@
 package xlong.urlclassify.main;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -49,21 +51,25 @@ public class FlatClassify {
 		Parser stemParser = new TokenizeParser(null, new SingleWordTokenizer(), new  BigramSegmentParser(null, new SnowballStemParser(null)));
 		Parser parser = new UnionParser(null, segParser, simpleParser);
 		Parser urlParser = parser;
-		String[] stopWordsFiles = new String[] {
-			"E:/longx/data/stop-words/stop-words_english_1_en.txt",
-			"E:/longx/data/stop-words/stop-words_english_2_en.txt",
-			"E:/longx/data/stop-words/stop-words_english_3_en.txt",
-			"E:/longx/data/stop-words/stop-words_english_4_google_en.txt",
-			"E:/longx/data/stop-words/stop-words_english_5_en.txt",
-			"E:/longx/data/stop-words/stop-words_english_6_en.txt",
-			"E:/longx/data/lxdata/stopwords1.txt",
-			"E:/longx/data/lxdata/stopwords2.txt",
-			"E:/longx/data/lxdata/stopwordsMySQL.txt",
-			"E:/longx/data/lxdata/stopwordsUrl.txt",
-		};
-		for (String stopWordsFile:stopWordsFiles) {
-			TextToSparseVectorConverter.addStopwords(stopWordsFile);
-		}
+		
+//		String[] stopWordsFiles = new String[] {
+//			"E:/longx/data/stop-words/stop-words_english_1_en.txt",
+//			"E:/longx/data/stop-words/stop-words_english_2_en.txt",
+//			"E:/longx/data/stop-words/stop-words_english_3_en.txt",
+//			"E:/longx/data/stop-words/stop-words_english_4_google_en.txt",
+//			"E:/longx/data/stop-words/stop-words_english_5_en.txt",
+//			"E:/longx/data/stop-words/stop-words_english_6_en.txt",
+//			"E:/longx/data/lxdata/stopwords1.txt",
+//			"E:/longx/data/lxdata/stopwords2.txt",
+//			"E:/longx/data/lxdata/stopwordsMySQL.txt",
+//			"E:/longx/data/lxdata/stopwordsUrl.txt",
+//		};
+//		for (String stopWordsFile:stopWordsFiles) {
+//			TextToSparseVectorConverter.addStopwords(stopWordsFile);
+//		}
+		String stopWordsFile = "/data/stopwords.txt";
+		TextToSparseVectorConverter.addStopwords(new BufferedReader(new InputStreamReader(FlatClassify.class.getResourceAsStream(stopWordsFile))));
+		
 		ClassifierPartsFactory factory = new ClassifierPartsFactory() {
 			protected final Tokenizer tokenizer = new SingleWordTokenizer();
 			@Override

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.TreeMap;
 
 import xlong.nlp.tokenizer.Tokenizer;
+import xlong.util.MyWriter;
 import xlong.wm.sample.Composite;
 import xlong.wm.sample.Label;
 import xlong.wm.sample.Sample;
@@ -126,6 +127,22 @@ public class TextToSparseVectorConverter {
 			stopwords.add(word.toLowerCase());
 		}
 		in.close();
+	}
+	
+	public static void addStopwords(BufferedReader in) throws IOException {
+		String word;
+		while((word = in.readLine()) != null) {
+			stopwords.add(word.toLowerCase());
+		}
+		in.close();	
+	}
+	
+	public static void writeStopwords(String stopWordsFile) throws IOException {
+		MyWriter.setFile(stopWordsFile, false);
+		for (String string : stopwords) {
+			MyWriter.writeln(string);
+		}
+		MyWriter.close();
 	}
 
 	private static void sortArray(int[] array) {
